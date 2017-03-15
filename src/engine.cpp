@@ -74,29 +74,38 @@ void Engine::intro()
 	cin.ignore();
 }
 
-void Engine::menu()
-{
-	system("cls");
-	cout<<"MENU"<<endl;
-}
 
 void Engine::explore()
 {
 	char key;
 	system("cls");
 	_universe[0]->print();
+	float cooldown = 0.0f;
 	while (true)
 	{
 		//add cases for each direction pressed, pause menu, etc...
-		if(GetAsyncKeyState(VK_ESCAPE) or GetAsyncKeyState(0x51))
+		if(GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(0x51))
 		{
 			system("cls");
 			Exit();
 			_universe[0]->print();
 		}
-		cin>>key;
-		system("cls");
-		_universe[0]->print();
+		//player movement (WASD)
+		else if(GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41)
+			|| GetAsyncKeyState(0x53)|| GetAsyncKeyState(0x44))
+		{
+			system("cls");
+			_universe[0]->print();
+		}
+		//pause/menu
+		else if(GetAsyncKeyState(0x0D) && cooldown>20)
+		{
+			system("cls");
+			menu();
+			cooldown = 0;
+			_universe[0]->print();
+		}
+		cooldown+=0.01f;
 	}
 	
 	// ==================movement========================
@@ -113,7 +122,23 @@ void Engine::battle(Enemy** enemies)
 	
 }
 
-//================================Exit, Load, Save=========================================
+//================================Menu, Exit, Load, Save=========================================
+
+void Engine::menu()
+{
+	char key;
+	system("cls");
+	cout<<"MENU"<<endl;
+	cin>>key;
+	switch(key){
+		case 'y':
+			exit(0);
+		case 'n':
+		default:
+			break;
+	}
+	return;
+}
 
 void Engine::Exit()
 {
