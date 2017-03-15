@@ -1,21 +1,17 @@
 /*
 Sample procedurally generated dungeon crawler
 
-
+See LICENSE.txt
 Author: Ferrohound
 */
 
 #include <stdio.h>
 #include <iostream>
 #include <string>
-#include <Windows.h>
 #include <ctime>
 #include <fstream>
 
-#include "characters.h"
-#include "world.h"
 #include "engine.h"
-
 
 using std::cout;
 using std::cin;
@@ -30,19 +26,11 @@ using std::endl;
 
 int main(int argx, char*argv[]){
 	
-	intro();
+	Engine* engine = new Engine();
+
+	engine->run(0);
 	
-	Engine engine();
-	
-	World** universe = new World*[1];
-	universe[0] = new World("Test",1);
-	
-	universe[0]->getFloor(0)->print();
-	
-	char key;
-	
-	engine.run(0);
-	
+	delete engine;
 	return 0;
 }
 

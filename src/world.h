@@ -23,6 +23,18 @@ using std::cin;
 using std::endl;
 using std::string;
 
+
+//==========================TILE==============================================
+//perhaps even include a tile class, this can store info on what inhabits it
+//whether or not it's a ladder or door, etc...
+class Tile{
+	public:
+		Tile();
+		
+	private:
+		
+};
+
 //============================FLOOR============================================
 //each floor takes care of its own data, the world contains pointers to each floor
 //and probably whatever enemies exist on it to keep consistency
@@ -36,8 +48,9 @@ class Floor{
 		//member variables
 		int _width;
 		int _height;
+		//this is the char* array
 		char ** _data;
-		//the length of non-space characters
+		//the number of non-space characters
 		int* _numF;
 		//the offset of spaces per line
 		int* _offset;

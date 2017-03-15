@@ -7,7 +7,6 @@
 
 #include "characters.h"
 #include "world.h"
-#include "engine.h"
 
 #define offset "		"
 
@@ -22,7 +21,7 @@ class Engine{
 		Engine();
 		~Engine();
 		
-		void run();
+		void run(int state);
 		
 		//the four gamestates
 		void intro();
@@ -30,9 +29,9 @@ class Engine{
 		void explore();
 		void battle(Enemy** enemies);
 		
-		void exit();
-		void save();
-		void load();
+		void Exit();
+		void Save();
+		void Load();
 		
 		
 		void loadWorld(const string& path);

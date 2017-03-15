@@ -2,9 +2,8 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <Windows.h>
 
-#include "characters.h"
-#include "world.h"
 #include "engine.h"
 
 #define offset "		"
@@ -16,16 +15,18 @@ using std::endl;
 
 Engine::Engine()
 {
-	
-	
+	cout<<"Creating..."<<endl;
+	_universe = new World*[1];
+	_universe[0] = new World("Earth", 1);
+	cout<<"Done creating..."<<endl;
 	
 }
 
 Engine::~Engine()
 {
 	//clear everything
-	
-	
+	delete _universe[0];
+	delete _universe;
 }
 
 //===========================Run====================================
@@ -81,16 +82,21 @@ void Engine::menu()
 
 void Engine::explore()
 {
+	char key;
+	system("cls");
+	_universe[0]->print();
 	while (true)
 	{
 		//add cases for each direction pressed, pause menu, etc...
 		if(GetAsyncKeyState(VK_ESCAPE) or GetAsyncKeyState(0x51))
 		{
-			exit();
 			system("cls");
-			universe[0]->print();
+			Exit();
+			_universe[0]->print();
 		}
 		cin>>key;
+		system("cls");
+		_universe[0]->print();
 	}
 	
 	// ==================movement========================
@@ -109,7 +115,7 @@ void Engine::battle(Enemy** enemies)
 
 //================================Exit, Load, Save=========================================
 
-void Engine::exit()
+void Engine::Exit()
 {
 	char key;
 	system("cls");
@@ -125,12 +131,12 @@ void Engine::exit()
 	return;
 }
 
-void Engine::save()
+void Engine::Save()
 {
 	
 }
 
-void Engine::load()
+void Engine::Load()
 {
 	
 }
