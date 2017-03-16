@@ -1,3 +1,6 @@
+#if !defined(CHARACTER_H)
+#define CHARACTER_H
+
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -63,3 +66,4 @@ class Rival: public NPC, public Enemy{
 		Rival();
 };
 
+#endif

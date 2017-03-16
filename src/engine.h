@@ -5,7 +5,9 @@
 #include <ctime>
 #include <fstream>
 
-#include "characters.h"
+//#include <atomic>
+//#include <chrono>
+
 #include "world.h"
 
 #define offset "		"
@@ -14,6 +16,16 @@ using std::string;
 using std::cout;
 using std::cin;
 using std::endl;
+
+struct Action{
+	
+	union
+	{
+		
+	};
+	
+	bool _keyDown;
+};
 
 class Engine{
 	public:
@@ -29,9 +41,15 @@ class Engine{
 		void explore();
 		void battle(Enemy** enemies);
 		
+		//actions within each game state
+		//for now just move in explore
+		void move();
+		
+		
+		//UI essentially
 		void Exit();
 		void Save();
-		void Load();
+		void Load(const string& path);
 		
 		
 		void loadWorld(const string& path);
@@ -40,11 +58,13 @@ class Engine{
 		//array of all the worlds
 		World** _universe;
 		//index of whatever world the player is on
-		int _worldIndex;
+		int _index;
 		//the input key
 		char _key;
 		//battle or explore state
 		int _state;
-	
+		
+		//time
+		//std::chrono::high_resolution_clock::time_point _current_time;
 	
 };

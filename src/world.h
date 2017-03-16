@@ -13,15 +13,26 @@
 	
 	Author: Ferrohound
 */
+#if !defined(WORLD_H)
+#define WORLD_H
 
 #include <string>
 #include <stdio.h>
 #include <iostream>
+#include "characters.h"
+#include <vector>
 
 using std::cout;
 using std::cin;
 using std::endl;
+
 using std::string;
+using std::vector;
+
+struct pos{
+	int x;
+	int y;
+};
 
 
 //==========================TILE==============================================
@@ -30,9 +41,27 @@ using std::string;
 class Tile{
 	public:
 		Tile();
+		~Tile();
+		char getSymbol();
+		Character** getCharacters();
+		void update();
 		
 	private:
+		char _symbol;
+		vector<Character*> _characters;
+		vector<string> _pickups;
+		Tile* _next;
 		
+};
+
+//============================ROOM============================================
+class Room{
+	public:
+		Room();
+		~Room();
+	
+	private:
+	
 };
 
 //============================FLOOR============================================
@@ -41,8 +70,11 @@ class Tile{
 class Floor{
 	public:
 		Floor(int difficulty=1);
+		~Floor();
 		//print the current board, including where the player and enemies are
 		void print();
+		void update();
+		void move();
 		
 	private:
 		//member variables
@@ -60,6 +92,10 @@ class Floor{
 		//member functions
 		void generate(int difficulty);
 		void clear();
+		
+		//temporary player position thing
+		pos player;
+		
 };
 
 //========================World=================================================
@@ -67,9 +103,13 @@ class Floor{
 class World{
 	public:
 		World(const string& name = "Earth", int floors=5, int difficulty = 1);
+		~World();
 		//method to delete each floor, free up memory
 		void clear();
 		void print();
+		void update();
+		void move();
+		
 		Floor* getFloor(int index);
 	
 	private:
@@ -82,4 +122,5 @@ class World{
 };
 
 
+#endif
 

@@ -20,6 +20,7 @@ Engine::Engine()
 	_universe[0] = new World("Earth", 1);
 	cout<<"Done creating..."<<endl;
 	
+	_index = 0;
 }
 
 Engine::~Engine()
@@ -83,27 +84,60 @@ void Engine::explore()
 	float cooldown = 0.0f;
 	while (true)
 	{
+		
+		SHORT W = GetAsyncKeyState( 0x57 );
+		SHORT A = GetAsyncKeyState( 0x41 );
+		SHORT S = GetAsyncKeyState( 0x53 );
+		SHORT D = GetAsyncKeyState( 0x44 );
+		
+		SHORT ESC = GetAsyncKeyState( VK_ESCAPE );
+		SHORT SPC = GetAsyncKeyState( 0x20 );
+		
+		SHORT ENTR = GetAsyncKeyState( 0x0D );
+		
+		bool keyDown = false;
+		
 		//add cases for each direction pressed, pause menu, etc...
-		if(GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(0x51))
+		if( ( 1 << 16 ) & ESC && !keyDown)
 		{
+			keyDown = true;
 			system("cls");
 			Exit();
 			_universe[0]->print();
+			keyDown = false;
 		}
 		//player movement (WASD)
-		else if(GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41)
-			|| GetAsyncKeyState(0x53)|| GetAsyncKeyState(0x44))
+		else if( (( 1 << 16 ) & W || ( 1 << 16 ) & A
+			|| ( 1 << 16 ) & S || ( 1 << 16 ) & D) && !keyDown&&cooldown>1000)
 		{
+			keyDown = true;
 			system("cls");
 			_universe[0]->print();
+			cout<<"MOVED!"<<endl;
+			move();
+			keyDown = false;
+			cooldown = 0;
 		}
 		//pause/menu
-		else if(GetAsyncKeyState(0x0D) && cooldown>20)
+		else if(( 1 << 16 ) & ENTR && !keyDown && cooldown>1000)
 		{
+			keyDown = true;
 			system("cls");
 			menu();
 			cooldown = 0;
 			_universe[0]->print();
+			keyDown = false;
+		}
+		
+		//space bar
+		else if( ( 1 << 16 ) & SPC && !keyDown &&cooldown>1000)
+		{
+			keyDown = true;
+			system("cls");
+			cooldown = 0;
+			_universe[0]->print();
+			cout<<"ACTION!"<<endl;
+			keyDown = false;
 		}
 		cooldown+=0.01f;
 	}
@@ -122,18 +156,26 @@ void Engine::battle(Enemy** enemies)
 	
 }
 
+//================================MOVE=========================================================
+
+void Engine::move()
+{
+	_universe[_index]->move();
+	
+}
+
 //================================Menu, Exit, Load, Save=========================================
 
 void Engine::menu()
 {
 	char key;
 	system("cls");
-	cout<<"MENU"<<endl;
+	cout<<"MENU"<<endl<<"Return to game? y/n"<<endl;
 	cin>>key;
 	switch(key){
-		case 'y':
-			exit(0);
 		case 'n':
+			exit(0);
+		case 'y':
 		default:
 			break;
 	}
@@ -161,7 +203,7 @@ void Engine::Save()
 	
 }
 
-void Engine::Load()
+void Engine::Load(const string& path)
 {
 	
 }

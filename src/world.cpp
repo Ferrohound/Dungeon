@@ -3,7 +3,11 @@
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
+
 #include <cmath>
+#include <algorithm> /*std::find(vector.begin(), vector.end(), item)!=vector.end())*/
+//#include <utility> /*std::pair, std::make_pair */
+
 
 #include "world.h"
 
@@ -29,11 +33,18 @@ Floor::Floor(int difficulty)
 	
 	generate(difficulty);
 }
+
+Floor::~Floor(){
+	
+}
 //method to randomly generate a floor given certain parameters
 //fix this up
 //perhaps rename floor into room and have pointers to other rooms like a quad tree
 void Floor::generate(int difficulty)
 {
+	player.x = 5;
+	player.y = 5;
+	
 	for(int i=0; i<_height;i++)
 	{
 		_offset[i] = 2;
@@ -61,6 +72,8 @@ void Floor::generate(int difficulty)
 		}
 	}
 	
+	_data[player.x][player.y] = 'O';
+	
 	//loop through a second time to clean up the map aethetic
 	return;
 }
@@ -83,6 +96,41 @@ void Floor::print()
 	}
 }
 
+//move enemies and other things I suppose
+void Floor::update()
+{
+	
+}
+
+//fix this later
+void Floor::move()
+{
+	
+	int x=player.x + rand()%3 - 1;
+	
+	if(x<0)
+		x = 0;
+	if(x>9)
+		x = 9;
+	
+	int y= player.y + rand()%3 - 1;
+	
+	if(y<0)
+		y = 0;
+	if(player.y>9)
+		y = 9;
+	
+	if(_data[x][y] != 'X')
+	{
+		_data[player.x][player.y] = '.';
+		player.x = x;
+		player.y = y;
+		_data[player.x][player.y] = 'O';
+	}
+	
+	update();
+}
+
 //======================WORLD METHODS=================================
 //constructor
 World::World(const string& name/* = "Earth"*/, int floors/*=5*/, int difficulty/* = 1*/)
@@ -94,6 +142,10 @@ World::World(const string& name/* = "Earth"*/, int floors/*=5*/, int difficulty/
 	_difficulty = difficulty;
 	cout<<"Generating..."<<endl;
 	generate();
+}
+
+World::~World(){
+	
 }
 
 Floor* World::getFloor(int index)
@@ -123,4 +175,14 @@ void World::clear()
 {
 	
 	return;
+}
+
+void World::update()
+{
+	
+}
+
+void World::move()
+{
+	_data[_current]->move();
 }

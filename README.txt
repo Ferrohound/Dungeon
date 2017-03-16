@@ -8,3 +8,7 @@ the like
 
 
 ---------------------
+
+
+Tower of power.
+3 stages of power, reach the top for your finest hour.
