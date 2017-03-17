@@ -98,11 +98,13 @@ void Engine::explore()
 		bool keyDown = false;
 		
 		//add cases for each direction pressed, pause menu, etc...
-		if( ( 1 << 16 ) & ESC && !keyDown)
+		if( ( 1 << 16 ) & ESC && !keyDown && !keyDown && cooldown>1000)
 		{
 			keyDown = true;
 			system("cls");
 			Exit();
+			cooldown = 0;
+			system("cls");
 			_universe[0]->print();
 			keyDown = false;
 		}
@@ -125,6 +127,7 @@ void Engine::explore()
 			system("cls");
 			menu();
 			cooldown = 0;
+			system("cls");
 			_universe[0]->print();
 			keyDown = false;
 		}
