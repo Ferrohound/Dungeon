@@ -82,6 +82,7 @@ void Engine::explore()
 	system("cls");
 	_universe[0]->print();
 	float cooldown = 0.0f;
+	
 	while (true)
 	{
 		
@@ -98,7 +99,8 @@ void Engine::explore()
 		bool keyDown = false;
 		
 		//add cases for each direction pressed, pause menu, etc...
-		if( ( 1 << 16 ) & ESC && !keyDown && !keyDown && cooldown>1000)
+		//escape
+		if( ( 1 << 16 ) & ESC && !keyDown && !keyDown && cooldown>750 )
 		{
 			keyDown = true;
 			system("cls");
@@ -110,7 +112,7 @@ void Engine::explore()
 		}
 		//player movement (WASD)
 		else if( (( 1 << 16 ) & W || ( 1 << 16 ) & A
-			|| ( 1 << 16 ) & S || ( 1 << 16 ) & D) && !keyDown&&cooldown>1000)
+			|| ( 1 << 16 ) & S || ( 1 << 16 ) & D) && !keyDown&&cooldown>750 )
 		{
 			keyDown = true;
 			system("cls");
@@ -121,7 +123,7 @@ void Engine::explore()
 			cooldown = 0;
 		}
 		//pause/menu
-		else if(( 1 << 16 ) & ENTR && !keyDown && cooldown>1000)
+		else if(( 1 << 16 ) & ENTR && !keyDown && cooldown>750 )
 		{
 			keyDown = true;
 			system("cls");
@@ -133,12 +135,13 @@ void Engine::explore()
 		}
 		
 		//space bar
-		else if( ( 1 << 16 ) & SPC && !keyDown &&cooldown>1000)
+		else if( ( 1 << 16 ) & SPC && !keyDown &&cooldown>750 )
 		{
 			keyDown = true;
 			system("cls");
 			cooldown = 0;
 			_universe[0]->print();
+			battle(NULL);
 			cout<<"ACTION!"<<endl;
 			keyDown = false;
 		}
@@ -155,7 +158,37 @@ void Engine::explore()
 
 void Engine::battle(Enemy** enemies)
 {
+	system("cls");
 	
+	cout<<"You've entered the battle phase!"<<endl;
+	cout<<"Get ready to fight."<<endl;
+	cout<<"(Press Escape to return)"<<endl;
+	float cooldown = 0.0f;
+	
+	while(true)
+	{
+		SHORT W = GetAsyncKeyState( 0x57 );
+		SHORT A = GetAsyncKeyState( 0x41 );
+		SHORT S = GetAsyncKeyState( 0x53 );
+		SHORT D = GetAsyncKeyState( 0x44 );
+		
+		SHORT ESC = GetAsyncKeyState( VK_ESCAPE );
+		SHORT SPC = GetAsyncKeyState( 0x20 );
+		
+		SHORT ENTR = GetAsyncKeyState( 0x0D );
+		
+		bool keyDown = false;
+		
+		//escape
+		if( ( 1 << 16 ) & ESC && !keyDown && !keyDown && cooldown>750 )
+		{
+			keyDown = true;
+			system("cls");
+			explore();
+		}
+		
+		cooldown+=0.01f;
+	}
 	
 }
 

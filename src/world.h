@@ -18,9 +18,17 @@
 
 #include <string>
 #include <stdio.h>
+#include <stdlib.h>     /* srand, rand */
 #include <iostream>
-#include "characters.h"
 #include <vector>
+#include <queue>
+//temporary
+
+#include <cmath>
+#include <algorithm> /*std::find(vector.begin(), vector.end(), item)!=vector.end())*/
+
+#include <time.h>
+//#include <utility> /*std::pair, std::make_pair */
 
 using std::cout;
 using std::cin;
@@ -28,40 +36,55 @@ using std::endl;
 
 using std::string;
 using std::vector;
+using std::queue;
 
-struct pos{
+typedef struct Vector2{
 	int x;
 	int y;
-};
+} Vector2;
 
 
-//==========================TILE==============================================
-//perhaps even include a tile class, this can store info on what inhabits it
-//whether or not it's a ladder or door, etc...
-class Tile{
-	public:
-		Tile();
-		~Tile();
-		char getSymbol();
-		Character** getCharacters();
-		void update();
-		
-	private:
-		char _symbol;
-		vector<Character*> _characters;
-		vector<string> _pickups;
-		Tile* _next;
-		
+
+struct Tile{
+	Tile();
+	Tile(int _x, int _y);
+	Tile(Vector2 position);
+	~Tile();
+
+	Vector2 pos;
+	int x, y;
 };
 
 //============================ROOM============================================
 class Room{
 	public:
 		Room();
+		Room(vector<Tile> _tiles, vector< vector<int> > map, int _id=-1);
 		~Room();
+		
+		//member functions
+		void SetAccessibleFromMainRoom();
+		bool isConnected(Room* A);
+		static int CompareRooms(Room* A, Room* B);
+		
+		bool operator==(const Room &other) const;
+		
+		static void ConnectRooms(Room* A, Room* B);
+		
+		
+		//member varialbes
+		vector<Tile> tiles;
+		vector<Tile> border;
+		vector<Room*> connectedRooms;
+		
+		int size;
+		int id;
+		bool mainRoom;
+		bool accessible;
+		
 	
 	private:
-	
+		
 };
 
 //============================FLOOR============================================
@@ -69,38 +92,47 @@ class Room{
 //and probably whatever enemies exist on it to keep consistency
 class Floor{
 	public:
-		Floor(int difficulty=1);
-		~Floor();
-		//print the current board, including where the player and enemies are
-		void print();
-		void update();
-		void move();
+		Floor(int width, int height, int fillPercentage = 55, bool useRandom = false);
 		
+		void Generate(int fillPercentage, bool useRandomSeed, int seed, int smoothing);
+		bool InMapRange(int x, int y);
+		vector<Tile> GetRegionTiles(int sx, int sy);
+		
+		vector< vector<Tile> > GetRegions (int tileType);
+		
+		void ProcessMap();
+		void RandomFillMap(bool useRandomSeed, int seed, int fillPercentage);
+		int GetSurroundingWallCount(int sx, int sy);
+		void SmoothMap();
+		
+		void ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility = false);
+		void CreatePassage(Room* A, Room* B, Tile tA, Tile tB);
+		void DrawCircle(Tile t, int r);
+		
+		vector<Tile> GetLine(Tile start, Tile end);
+		
+		friend std::ostream &operator<<( std::ostream &output, const Floor &F )
+		{
+			output << "Floor is : "<<std::endl;
+			for(int i = 0; i < F._width ; i++)
+			{
+				for(int j = 0; j < F._height ; j++)
+				{
+					output << F._map[i][j] << " ";
+				}
+				output << '\n';
+			}
+			return output; 
+		}
+		
+		std::vector< vector<int> > _map;
 	private:
-		//member variables
-		int _width;
-		int _height;
-		//this is the char* array
-		char ** _data;
-		//the number of non-space characters
-		int* _numF;
-		//the offset of spaces per line
-		int* _offset;
-		//the total length of the line
-		int* _totalW;
-		
-		//member functions
-		void generate(int difficulty);
-		void clear();
-		
-		//temporary player position thing
-		pos player;
-		
+		int _width, _height;
 };
 
 //========================World=================================================
 //contains the floors, total number of enemies(?), difficulty, etc...
-class World{
+/*class World{
 	public:
 		World(const string& name = "Earth", int floors=5, int difficulty = 1);
 		~World();
@@ -119,7 +151,7 @@ class World{
 		
 		//method to generate however many floors are required
 		void generate();
-};
+};*/
 
 
 #endif
