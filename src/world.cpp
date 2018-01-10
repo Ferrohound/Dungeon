@@ -235,7 +235,7 @@ void Floor::ProcessMap()
 		
 	vector< vector<Tile> > roomRegions = GetRegions(0);
 	
-	//cout<<"Initial number of rooms: "<<roomRegions.size() << std::endl;
+	cout<<"Initial number of rooms: "<<roomRegions.size() << std::endl;
 		
 	//any region with less than threshold tiles, remove it
 	int roomThreshold = 4;
@@ -263,12 +263,12 @@ void Floor::ProcessMap()
 	//error check this to make sure the room's aren't all eliminated
 	//remainingRooms.Sort();
 	
-	//std::sort (remainingRooms.begin(), remainingRooms.end(), Room::CompareRooms);
+	std::sort (remainingRooms.begin(), remainingRooms.end(), Room::CompareRooms);
 	if(remainingRooms.size() > 0)
 	{
 		remainingRooms[0]->mainRoom = true;
 		remainingRooms[0]->accessible = true;
-		
+		cout<<"Biggest of the remaining rooms=> " << remainingRooms[0]->size<<std::endl;
 		ConnectClosestRooms(remainingRooms);
 	}
 	
@@ -329,6 +329,14 @@ vector< vector<Tile> > Floor::GetRegions(int tileType)
 		
 	//check if tile was looked at yet
 	int flags[_width][_height];
+	
+	for(int i = 0; i < _width; i++)
+	{
+		for(int j = 0; j < _height; j++)
+		{
+			flags[i][j] = 0;
+		}
+	}
 		
 	for(int x = 0; x < _width; x++)
 	{

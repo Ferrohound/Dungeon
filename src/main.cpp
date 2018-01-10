@@ -74,7 +74,6 @@ int main(int argx, char*argv[]){
 			break;
 			
 			default:
-				DrawMap(test);
 			break;
 		}
 
