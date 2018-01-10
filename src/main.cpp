@@ -23,6 +23,19 @@ using std::endl;
 //use a hash table to store the ascii letters
 //give each character/monster ascii art too
 
+void DrawMap(Floor* t)
+{
+	for(int i = 0 ; i < t->_map.size(); i++)
+	{
+		//cout<<i<<" "<<test->_map[i].size()<<std::endl;
+		for(int j = 0 ; j < t->_map[i].size(); j++)
+		{
+			cout<<t->_map[i][j];
+		}
+		cout<<std::endl;
+	}
+}
+
 
 int main(int argx, char*argv[]){
 	
@@ -32,33 +45,39 @@ int main(int argx, char*argv[]){
 	
 	//delete engine;
 	
-	Floor* test = new Floor(50, 50, 50);
+	Floor* test = new Floor(50, 50, 50, true);
 	
-	for(int i = 0 ; i < test->_map.size(); i++)
-	{
-		//cout<<i<<" "<<test->_map[i].size()<<std::endl;
-		for(int j = 0 ; j < test->_map[i].size(); j++)
-		{
-			cout<<test->_map[i][j];
-		}
-		cout<<std::endl;
-	}
+	DrawMap(test);
 	
 	int x;
 	cin >> x;
 	
 	while(x!=-1)
 	{
-		test->Generate(50, false, 0, 5);
-		for(int i = 0 ; i < test->_map.size(); i++)
+		switch(x)
 		{
-			//cout<<i<<" "<<test->_map[i].size()<<std::endl;
-			for(int j = 0 ; j < test->_map[i].size(); j++)
-			{
-				cout<<test->_map[i][j];
-			}
-			cout<<std::endl;
+			case 0:
+				test->Generate(50, true, 0, 5);
+				DrawMap(test);
+			break;
+			
+			case 1:
+				test->SaveFloor("test.txt");
+			break;
+			
+			case 2:
+				test->LoadFloor("test.txt");
+				DrawMap(test);
+			break;
+			
+			case -1:
+			break;
+			
+			default:
+				DrawMap(test);
+			break;
 		}
+
 		cin >> x;
 	}
 	

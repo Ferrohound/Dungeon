@@ -16,13 +16,14 @@
 #if !defined(WORLD_H)
 #define WORLD_H
 
+#include <string.h>
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>     /* srand, rand */
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <queue>
-//temporary
 
 #include <cmath>
 #include <algorithm> /*std::find(vector.begin(), vector.end(), item)!=vector.end())*/
@@ -100,6 +101,8 @@ class Floor{
 		
 		vector< vector<Tile> > GetRegions (int tileType);
 		
+		//remove a wall or room region that is below a certain threshold and connect
+		//rooms
 		void ProcessMap();
 		void RandomFillMap(bool useRandomSeed, int seed, int fillPercentage);
 		int GetSurroundingWallCount(int sx, int sy);
@@ -111,6 +114,16 @@ class Floor{
 		
 		vector<Tile> GetLine(Tile start, Tile end);
 		
+		//save a floor and a load a floor from a given path
+		void LoadFloor(string path);
+		void SaveFloor(string path);
+		
+		void LoadFloor();
+		void SaveFloor();
+		
+		vector < vector<int> > GetMap();
+		
+		//this doesn't work for some reason
 		friend std::ostream &operator<<( std::ostream &output, const Floor &F )
 		{
 			output << "Floor is : "<<std::endl;

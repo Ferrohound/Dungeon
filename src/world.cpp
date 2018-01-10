@@ -163,13 +163,12 @@ void Floor::Generate(int fillPercentage, bool useRandomSeed, int seed, int smoot
 //randomly fill a map given a fillPercentage
 void Floor::RandomFillMap(bool useRandomSeed, int seed, int fillPercentage)
 {
-	cout<<"Filling with random data"<<std::endl;
+	//cout<<"Filling with random data"<<std::endl;
 	if(useRandomSeed)
 		//whatever this is in C++
-		srand (time(NULL));
+		seed = time(NULL);
 	
-	else
-		srand(seed);
+	srand(seed);
 	
 	cout<<"have seed..."<<std::endl;
 	
@@ -183,13 +182,13 @@ void Floor::RandomFillMap(bool useRandomSeed, int seed, int fillPercentage)
 				_map[x][y] = (rand() % 101 < fillPercentage) ? 1:0;
 		}
 	}		
-	cout<<"done filling"<<std::endl;
+	//cout<<"done filling"<<std::endl;
 }
 
 //cellular automita; change tile value based on what surrounds it
 void Floor::SmoothMap()
 {
-	cout<<"smoothing"<<std::endl;
+	//cout<<"smoothing"<<std::endl;
 	for(int x = 0; x < _width; x++)
 	{
 		for(int y = 0; y < _height; y++)
@@ -207,17 +206,19 @@ void Floor::SmoothMap()
 			}
 		}
 	}
-	cout<<"done smoothing"<<std::endl;
+	//cout<<"done smoothing"<<std::endl;
+	
 }
 
+//clean up, remove wall regions and room regions that are too small
 void Floor::ProcessMap()
 {
-	cout<<"Processing"<<std::endl;
+	//cout<<"Processing"<<std::endl;
 	
 	vector< vector<Tile> > wallRegions = GetRegions(1);
 		
 	//any region with less than threshold tiles, remove it
-	int wallThreshold = 2;
+	int wallThreshold = 4;
 	for(int i=0 ; i < wallRegions.size(); i++)
 	{
 		if(wallRegions[i].size() < wallThreshold)
@@ -230,14 +231,14 @@ void Floor::ProcessMap()
 		}
 	}
 	
-	cout<<"Removed Walls"<<std::endl;
+	//cout<<"Removed Walls"<<std::endl;
 		
 	vector< vector<Tile> > roomRegions = GetRegions(0);
 	
-	cout<<"Initial number of rooms: "<<roomRegions.size() << std::endl;
+	//cout<<"Initial number of rooms: "<<roomRegions.size() << std::endl;
 		
 	//any region with less than threshold tiles, remove it
-	int roomThreshold = 2;
+	int roomThreshold = 4;
 	vector<Room*> remainingRooms;
 	int id = 0;
 	for(int i=0 ; i < roomRegions.size(); i++)
@@ -247,7 +248,7 @@ void Floor::ProcessMap()
 			for(int j = 0; j < roomRegions[i].size(); j++)
 			{
 				Tile t = roomRegions[i][j];
-				_map[t.x][t.y] = 0;
+				_map[t.x][t.y] = 1;
 			}
 		}
 		else
@@ -257,26 +258,38 @@ void Floor::ProcessMap()
 		}
 	}
 	
-	cout<<"Removed Rooms; "<<remainingRooms.size() << "remaining. " << std::endl;
+	cout<<"Removed "<<roomRegions.size() - remainingRooms.size() << " rooms." << std::endl;
 		
 	//error check this to make sure the room's aren't all eliminated
 	//remainingRooms.Sort();
 	
 	//std::sort (remainingRooms.begin(), remainingRooms.end(), Room::CompareRooms);
-	remainingRooms[0]->mainRoom = true;
-	remainingRooms[0]->accessible = true;
+	if(remainingRooms.size() > 0)
+	{
+		remainingRooms[0]->mainRoom = true;
+		remainingRooms[0]->accessible = true;
+		
+		ConnectClosestRooms(remainingRooms);
+	}
 	
-	ConnectClosestRooms(remainingRooms);
-	
-	cout<<"DoneProcessing"<<std::endl;
+	//cout<<"Done Processing"<<std::endl;
 }
 
+//floodfill to get all tiles in the region
 vector<Tile> Floor::GetRegionTiles(int sx, int sy)
 {
 	vector<Tile> tiles;
 		
 	//check if tile was looked at yet
+	//need to initialize each value, however, look at alternatives
 	int flags[_width][_height];
+	for(int i = 0; i < _width; i++)
+	{
+		for(int j = 0; j < _height; j++)
+		{
+			flags[i][j] = 0;
+		}
+	}
 	
 	int tileType = _map[sx][sy];
 	
@@ -311,7 +324,7 @@ vector<Tile> Floor::GetRegionTiles(int sx, int sy)
 
 vector< vector<Tile> > Floor::GetRegions(int tileType)
 {
-	cout<<"Getting Regions"<<std::endl;
+	//cout<<"Getting Regions"<<std::endl;
 	vector< vector<Tile> > regions;
 		
 	//check if tile was looked at yet
@@ -334,7 +347,7 @@ vector< vector<Tile> > Floor::GetRegions(int tileType)
 			}
 		}
 	}
-	cout<<"Done Getting " << regions.size()<<" Regions"<<std::endl;
+	//cout<<"Done Getting " << regions.size()<<" Regions"<<std::endl;
 	return regions;
 }
 
@@ -363,7 +376,7 @@ int Floor::GetSurroundingWallCount(int sx, int sy)
 void Floor::ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility)
 {
 	
-	cout<<"Connecting rooms.."<<std::endl;
+	//cout<<"Connecting rooms.."<<std::endl;
 	vector<Room*> roomListA;
 	vector<Room*> roomListB;
 		
@@ -459,12 +472,12 @@ void Floor::ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility)
 		ConnectClosestRooms(rooms, true);
 	}
 	
-	cout<<"Done Connecting Rooms"<<std::endl;
+	//cout<<"Done Connecting Rooms"<<std::endl;
 }
 
 void Floor::CreatePassage(Room* A, Room* B, Tile tA, Tile tB)
 {
-	cout<<"Creating Passage"<<std::endl;
+	//cout<<"Creating Passage"<<std::endl;
 	Room::ConnectRooms(A, B);
 	
 	vector<Tile> line = GetLine(tA, tB);
@@ -478,7 +491,7 @@ void Floor::CreatePassage(Room* A, Room* B, Tile tA, Tile tB)
 //get the line of tiles connecting start to end
 vector<Tile> Floor::GetLine(Tile start, Tile end)
 {
-	cout<<"Getting Line"<<std::endl;
+	//cout<<"Getting Line"<<std::endl;
 	vector<Tile> line;
 		
 	int x = start.x;
@@ -489,8 +502,8 @@ vector<Tile> Floor::GetLine(Tile start, Tile end)
 	
 	bool inverted = false;
 	
-	int step = (dx < 0) ? 1:-1;
-	int gradientStep = (dy < 0) ? 1:-1;
+	int step = (dx < 0) ? -1:1;
+	int gradientStep = (dy < 0) ? -1:1;
 	
 	int longest = abs(dx);
 	int shortest = abs(dy);
@@ -501,8 +514,8 @@ vector<Tile> Floor::GetLine(Tile start, Tile end)
 		longest = abs(dy);
 		shortest = abs(dx);
 		
-		step = (dy < 0) ? 1:-1;
-		gradientStep = (dx < 0) ? 1:-1;
+		step = (dy < 0) ? -1:1;
+		gradientStep = (dx < 0) ? -1:1;
 	}
 	
 	int gradientAccumulation = longest/2;
@@ -510,6 +523,7 @@ vector<Tile> Floor::GetLine(Tile start, Tile end)
 	for(int i = 0; i<longest ; i++)
 	{
 		line.push_back(Tile(x,y));
+		//cout<<x<< " " << y <<"=>";
 		
 		if(inverted)
 			y+=step;
@@ -528,15 +542,16 @@ vector<Tile> Floor::GetLine(Tile start, Tile end)
 			gradientAccumulation-=longest;
 		}
 	}
+	cout<<std::endl;
 	return line;
 }
 
 void Floor::DrawCircle(Tile t, int r)
 {
-	cout<<"Drawing circle at point "<<t.x<<" "<<t.y<<" "<<"with radius "<<r<<std::endl;
-	for(int x = -r; x <=r; x++)
+	//cout<<"Drawing circle at point "<<t.x<<" "<<t.y<<" "<<"with radius "<<r<<std::endl;
+	for(int x = -r; x <=r ; x++)
 	{
-		for(int y = -r; y <=r; y++)
+		for(int y = -r; y <=r ; y++)
 		{
 			if(x*x + y*y <= r*r)
 			{
@@ -545,11 +560,98 @@ void Floor::DrawCircle(Tile t, int r)
 				
 				if(InMapRange(mapX, mapY))
 				{
-					_map[mapX][mapY] = 0;
+					_map[mapX][mapY] = 2;
 				}
 			}
 		}
 	}		
+}
+
+void Floor::LoadFloor()
+{
+	string s;
+	cout<<"Path to file: ";
+	getline (cin, s);
+	
+	LoadFloor(s);
+}
+
+void Floor::LoadFloor(string path)
+{
+	std::ifstream file;
+	file.open(path.c_str());
+	
+	string line;
+	char l[100000];
+	
+	if(!file.is_open())
+		return;
+	
+	_map.clear();
+	
+	while(getline (file, line))
+	{
+		strcpy(l,line.c_str());
+		vector<int> col;
+		
+		for(int y = 0 ; y < strlen(l) ; y++)
+		{
+			col.push_back((l[y] - '0'));
+		}
+		
+		//for now only read 0, 1
+		_map.push_back(col);
+	}
+	
+	/*for(int i = 0 ; i < _map.size(); i++)
+	{
+		for(int j = 0 ; j < _map[i].size(); j++)
+		{
+			cout<<_map[i][j];
+		}
+		cout<<std::endl;
+	}
+	
+	cout<<"Finished printing"<<std::endl;*/
+	
+	_width = _map.size();
+	
+	if(_width > 0)
+		_height = _map[0].size();
+	else
+		_height = 0;
+	
+	file.close();
+	
+	cout<<"Finished reading"<<std::endl;
+}
+
+void Floor::SaveFloor()
+{
+	string s;
+	cout<<"Path to file: ";
+	getline (cin, s);
+	
+	SaveFloor(s);
+}
+
+void Floor::SaveFloor(string path)
+{
+	std::ofstream file;
+	file.open(path.c_str());
+	
+	if(!file.is_open())
+		return;
+	
+	for(int i = 0; i < _width ; i++)
+	{
+		for(int j = 0; j < _height ; j++)
+		{
+			file << _map[i][j];
+		}
+		file << '\n';
+	}
+	file.close();
 }
 
 //======================WORLD METHODS=================================
