@@ -132,6 +132,7 @@ bool Floor::InMapRange(int x, int y)
 //create a floor with the given dimensions and fillPercentage
 Floor::Floor(int width, int height, int fillPercentage, bool useRandom) : _width(width), _height(height)
 {	
+	debug = true;
 	Generate(fillPercentage, useRandom, 0, 5);
 }
 
@@ -170,7 +171,8 @@ void Floor::RandomFillMap(bool useRandomSeed, int seed, int fillPercentage)
 	
 	srand(seed);
 	
-	cout<<"have seed..."<<std::endl;
+	if (debug)
+		cout<<"have seed..."<<std::endl;
 	
 	for(int x = 0; x < _width; x++)
 	{
@@ -235,7 +237,8 @@ void Floor::ProcessMap()
 		
 	vector< vector<Tile> > roomRegions = GetRegions(0);
 	
-	cout<<"Initial number of rooms: "<<roomRegions.size() << std::endl;
+	if (debug)
+		cout<<"Initial number of rooms: "<<roomRegions.size() << std::endl;
 		
 	//any region with less than threshold tiles, remove it
 	int roomThreshold = 4;
@@ -258,7 +261,8 @@ void Floor::ProcessMap()
 		}
 	}
 	
-	cout<<"Removed "<<roomRegions.size() - remainingRooms.size() << " rooms." << std::endl;
+	if (debug)
+		cout<<"Removed "<<roomRegions.size() - remainingRooms.size() << " rooms." << std::endl;
 		
 	//error check this to make sure the room's aren't all eliminated
 	//remainingRooms.Sort();
@@ -268,7 +272,8 @@ void Floor::ProcessMap()
 	{
 		remainingRooms[0]->mainRoom = true;
 		remainingRooms[0]->accessible = true;
-		cout<<"Biggest of the remaining rooms=> " << remainingRooms[0]->size<<std::endl;
+		if (debug)
+			cout<<"Biggest of the remaining rooms=> " << remainingRooms[0]->size<<std::endl;
 		ConnectClosestRooms(remainingRooms);
 	}
 	
@@ -568,7 +573,10 @@ void Floor::DrawCircle(Tile t, int r)
 				
 				if(InMapRange(mapX, mapY))
 				{
-					_map[mapX][mapY] = 2;
+					if (debug)
+						_map[mapX][mapY] = 2;
+					else
+						_map[mapX][mapY] = 1;
 				}
 			}
 		}

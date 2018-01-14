@@ -47,7 +47,7 @@ int main(int argx, char*argv[]){
 	
 	Floor* test = new Floor(50, 50, 50, true);
 	
-	DrawMap(test);
+	cout<<(*test)<<std::endl;
 	
 	int x;
 	cin >> x;
@@ -58,7 +58,7 @@ int main(int argx, char*argv[]){
 		{
 			case 0:
 				test->Generate(50, true, 0, 5);
-				DrawMap(test);
+				cout<<(*test)<<std::endl;
 			break;
 			
 			case 1:
@@ -67,7 +67,7 @@ int main(int argx, char*argv[]){
 			
 			case 2:
 				test->LoadFloor("test.txt");
-				DrawMap(test);
+				cout<<(*test)<<std::endl;
 			break;
 			
 			case -1:

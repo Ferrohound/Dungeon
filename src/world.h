@@ -131,7 +131,7 @@ class Floor{
 			{
 				for(int j = 0; j < F._height ; j++)
 				{
-					output << F._map[i][j] << " ";
+					output << F._map[i][j];
 				}
 				output << '\n';
 			}
@@ -139,6 +139,7 @@ class Floor{
 		}
 		
 		std::vector< vector<int> > _map;
+		bool debug;
 	private:
 		int _width, _height;
 };
