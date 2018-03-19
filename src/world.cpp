@@ -758,7 +758,7 @@ void Floor::ProcessRooms(int max, int min, int smoothing)
 	{
 		for(int j = 0; j < _rooms.size(); j++)
 		{
-			if(i == 0)
+			if(i == -1)
 			{
 				//iterate over every tile in the room and set its value to a random number
 				//between the given range
@@ -783,8 +783,9 @@ void Floor::SmoothRoom(Room* room)
 	float avg = 0;
 	for(int k = 0; k < room->tiles.size(); k++)
 	{
-		_map[room->tiles[k].x][room->tiles[k].y] = 
-			GetAvgWallValue(room->tiles[k].x, room->tiles[k].y);
+		avg = GetAvgWallValue(room->tiles[k].x, room->tiles[k].y);
+		_map[room->tiles[k].x][room->tiles[k].y] = avg;
+			
 	}
 }
 

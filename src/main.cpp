@@ -46,6 +46,7 @@ int main(int argx, char*argv[]){
 	//delete engine;
 	
 	Floor* test = new Floor(50, 50, 50, true);
+	test->ProcessRooms(9, 3, 1);
 	
 	cout<<(*test)<<std::endl;
 	
@@ -58,7 +59,7 @@ int main(int argx, char*argv[]){
 		{
 			case 0:
 				test->Generate(50, true, 0, 5);
-				test->ProcessRooms(5, 1, 1);
+				test->ProcessRooms(9, 3, 1);
 				cout<<(*test)<<std::endl;
 			break;
 			
