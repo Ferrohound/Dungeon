@@ -57,6 +57,8 @@ struct Tile{
 };
 
 //============================ROOM============================================
+//rename to region?
+
 class Room{
 	public:
 		Room();
@@ -91,11 +93,13 @@ class Room{
 //============================FLOOR============================================
 //each floor takes care of its own data, the world contains pointers to each floor
 //and probably whatever enemies exist on it to keep consistency
+
+//rename to grid?
 class Floor{
 	public:
-		Floor(int width, int height, int fillPercentage = 55, bool useRandom = false);
+		Floor(int width, int height, int fillPercentage = 55, bool useRandom = false, bool connect = true);
 		
-		void Generate(int fillPercentage, bool useRandomSeed, int seed, int smoothing);
+		void Generate(int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect = true);
 		bool InMapRange(int x, int y);
 		vector<Tile> GetRegionTiles(int sx, int sy);
 		
@@ -103,12 +107,18 @@ class Floor{
 		
 		//remove a wall or room region that is below a certain threshold and connect
 		//rooms
-		void ProcessMap();
+		void ProcessMap(bool connect = true);
 		void RandomFillMap(bool useRandomSeed, int seed, int fillPercentage);
 		int GetSurroundingWallCount(int sx, int sy);
+		int GetAvgWallValue(int sx, int sy, int radius = 1);
 		void SmoothMap();
 		
+		//modify rooms to make them more mountainous, etc..
+		void ProcessRooms(int max = 1, int min = 1, int smoothing = 1);
+		void SmoothRoom(Room* room);
+		
 		void ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility = false);
+		void ConnectRooms(Room* A, Room* B);
 		void CreatePassage(Room* A, Room* B, Tile tA, Tile tB);
 		void DrawCircle(Tile t, int r);
 		
@@ -139,6 +149,8 @@ class Floor{
 		}
 		
 		std::vector< vector<int> > _map;
+		std::vector< Room* > _rooms;
+		std::vector< Room* > _spaces;
 		bool debug;
 	private:
 		int _width, _height;

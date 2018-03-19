@@ -130,18 +130,20 @@ bool Floor::InMapRange(int x, int y)
 }
 
 //create a floor with the given dimensions and fillPercentage
-Floor::Floor(int width, int height, int fillPercentage, bool useRandom) : _width(width), _height(height)
+Floor::Floor(int width, int height, int fillPercentage, bool useRandom, bool connect) : _width(width), _height(height)
 {	
 	debug = true;
-	Generate(fillPercentage, useRandom, 0, 5);
+	Generate(fillPercentage, useRandom, 0, 5, connect);
 }
 
 //randomly generate a room given a fillPercentage, a seed and how much smoothing to use
-void Floor::Generate(int fillPercentage, bool useRandomSeed, int seed, int smoothing)
+void Floor::Generate(int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect)
 {
 	cout<<"Generating"<<std::endl;
 	
 	_map.clear();
+	_rooms.clear();
+	_spaces.clear();
 	
 	for(int i = 0; i < _height; i++)
 	{
@@ -156,7 +158,7 @@ void Floor::Generate(int fillPercentage, bool useRandomSeed, int seed, int smoot
 		SmoothMap();
 	}
 	
-	ProcessMap();
+	ProcessMap(connect);
 	
 	cout<<"Done Generating"<<std::endl;
 }
@@ -213,14 +215,16 @@ void Floor::SmoothMap()
 }
 
 //clean up, remove wall regions and room regions that are too small
-void Floor::ProcessMap()
+void Floor::ProcessMap(bool connect)
 {
-	//cout<<"Processing"<<std::endl;
+	cout<<"Processing"<<std::endl;
 	
 	vector< vector<Tile> > wallRegions = GetRegions(1);
+	vector<Room*> remainingSpaces;
 		
 	//any region with less than threshold tiles, remove it
 	int wallThreshold = 4;
+	int id = 0;
 	for(int i=0 ; i < wallRegions.size(); i++)
 	{
 		if(wallRegions[i].size() < wallThreshold)
@@ -231,9 +235,18 @@ void Floor::ProcessMap()
 				_map[t.x][t.y] = 0;
 			}
 		}
+		
+		else
+		{
+			/*cout<<"Dealing with the else"<<std::endl;
+			remainingSpaces.push_back(new Room(wallRegions[i], _map, id));
+			_spaces.push_back(remainingSpaces[id]);
+			id++;
+			cout<<"Done Dealing with the else"<<std::endl;*/
+			continue;
+		}
 	}
-	
-	//cout<<"Removed Walls"<<std::endl;
+	cout<<"Removed Walls"<<std::endl;
 		
 	vector< vector<Tile> > roomRegions = GetRegions(0);
 	
@@ -243,7 +256,7 @@ void Floor::ProcessMap()
 	//any region with less than threshold tiles, remove it
 	int roomThreshold = 4;
 	vector<Room*> remainingRooms;
-	int id = 0;
+	id = 0;
 	for(int i=0 ; i < roomRegions.size(); i++)
 	{
 		if(roomRegions[i].size() < roomThreshold)
@@ -257,12 +270,14 @@ void Floor::ProcessMap()
 		else
 		{
 			remainingRooms.push_back(new Room(roomRegions[i], _map, id));
+			_rooms.push_back(remainingRooms[id]);
 			id++;
 		}
 	}
 	
 	if (debug)
 		cout<<"Removed "<<roomRegions.size() - remainingRooms.size() << " rooms." << std::endl;
+
 		
 	//error check this to make sure the room's aren't all eliminated
 	//remainingRooms.Sort();
@@ -274,10 +289,12 @@ void Floor::ProcessMap()
 		remainingRooms[0]->accessible = true;
 		if (debug)
 			cout<<"Biggest of the remaining rooms=> " << remainingRooms[0]->size<<std::endl;
-		ConnectClosestRooms(remainingRooms);
 	}
 	
-	//cout<<"Done Processing"<<std::endl;
+	if(connect)
+		ConnectClosestRooms(remainingRooms);
+	
+	cout<<"Done Processing"<<std::endl;
 }
 
 //floodfill to get all tiles in the region
@@ -384,6 +401,67 @@ int Floor::GetSurroundingWallCount(int sx, int sy)
 		
 	}
 	return wallCount;
+}
+
+//get the average value of the surrounding tiles within the given radius
+int Floor::GetAvgWallValue(int sx, int sy, int radius)
+{
+	int avg = 0;
+	int wallCount = 0;
+	
+	for(int x = sx-radius; x <=sx+radius; x++)
+	{
+		for(int y = sy-radius; y <=sy+radius; y++)
+		{
+			if(x == sx && y == sy)
+				continue;
+			//if out of bounds, increase wallcount to encourage the sides to be wall-filled
+			if(!InMapRange(x, y))
+				wallCount++;
+			else
+			{
+				wallCount++;
+				avg+=_map[x][y];
+			}
+		}
+		
+	}
+	
+	avg/=wallCount;
+	return avg;
+}
+
+void Floor::ConnectRooms(Room* A, Room* B)
+{
+	cout<<"Bump";
+	int lowestD = (int) (pow((A->border[0].x - B->border[0].x), 2) +
+		(pow((A->border[0].y - B->border[0].y), 2)));
+	cout<<"Bump2";
+	
+	Tile bestTileA = Tile();
+	Tile bestTileB = Tile();
+	
+	for(int tA = 0; tA < A->border.size(); tA ++)
+	{
+		for(int tB = 0; tB < B->border.size(); tB ++)
+		{
+			Tile tileA =  A->border[tA];
+			Tile tileB =  B->border[tB];
+						
+			int distance = (int) (pow((tileA.x - tileB.x), 2) + 
+				 pow((tileA.y - tileB.y), 2));
+						 
+			if(distance < lowestD)
+			{
+				lowestD = distance;
+						
+				bestTileA = tileA;
+				bestTileB = tileB;
+			}
+		}
+	}
+	
+	CreatePassage(A, B, bestTileA, bestTileB);
 }
 
 void Floor::ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility)
@@ -668,6 +746,46 @@ void Floor::SaveFloor(string path)
 		file << '\n';
 	}
 	file.close();
+}
+
+void Floor::ProcessRooms(int max, int min, int smoothing)
+{
+	
+	int seed = time(NULL);
+	srand(seed);
+	
+	for(int i = -1; i < smoothing; i++)
+	{
+		for(int j = 0; j < _rooms.size(); j++)
+		{
+			if(i == 0)
+			{
+				//iterate over every tile in the room and set its value to a random number
+				//between the given range
+				for(int k = 0; k < _rooms[j]->tiles.size(); k++)
+				{
+					_map[_rooms[j]->tiles[k].x][_rooms[j]->tiles[k].y] = 
+						(rand() % (max - min) + min);
+				}
+			}
+			else
+			{
+				SmoothRoom(_rooms[j]);
+			}
+		}
+	}
+}
+
+//get each tile's x,y position and set its height to the average of the surrounding
+//tiles
+void Floor::SmoothRoom(Room* room)
+{
+	float avg = 0;
+	for(int k = 0; k < room->tiles.size(); k++)
+	{
+		_map[room->tiles[k].x][room->tiles[k].y] = 
+			GetAvgWallValue(room->tiles[k].x, room->tiles[k].y);
+	}
 }
 
 //======================WORLD METHODS=================================

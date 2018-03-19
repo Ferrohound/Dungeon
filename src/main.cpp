@@ -58,6 +58,7 @@ int main(int argx, char*argv[]){
 		{
 			case 0:
 				test->Generate(50, true, 0, 5);
+				test->ProcessRooms(5, 1, 1);
 				cout<<(*test)<<std::endl;
 			break;
 			
