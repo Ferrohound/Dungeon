@@ -214,6 +214,24 @@ void Floor::SmoothMap()
 	
 }
 
+bool Floor::IsOutlineTile(int x, int y)
+{
+	if(!InMapRange(x,y)) return false;
+	
+	for(int i = x-1; i < x+2; i++)
+	{
+		for(int j = y-1; j < y+2; j++)
+		{
+			if( i == x && j == y ) continue;
+			if( i != x && j != y ) continue;
+			if(!InMapRange(i, j)) continue;
+			
+			if(_map[i][j] == 1) return true;
+		}
+	}
+	return false;
+}
+
 //clean up, remove wall regions and room regions that are too small
 void Floor::ProcessMap(bool connect)
 {

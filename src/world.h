@@ -105,6 +105,9 @@ class Floor{
 		
 		vector< vector<Tile> > GetRegions (int tileType);
 		
+		//is the given position an outline tile
+		bool IsOutlineTile(int x, int y);
+		
 		//remove a wall or room region that is below a certain threshold and connect
 		//rooms
 		void ProcessMap(bool connect = true);
