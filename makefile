@@ -20,6 +20,7 @@ endif
 
 SOURCE = \
 	src/world.cpp \ 
+	src/BSP.cpp \
 
 OBJS = $(patsubst %.cpp, %.o, $(SOURCE))
 
