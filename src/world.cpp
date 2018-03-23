@@ -6,22 +6,22 @@ Tile::Tile()
 {
 	x = 0;
 	y = 0;
-	pos = Vector2 { 0, 0 };
+	//pos = Vector2 { 0, 0 };
 }
 
-Tile::Tile(Vector2 position)
+/*Tile::Tile(Vector2 position)
 {
 	pos = position;
 	x = pos.x;
 	y = pos.y;
-}
+}*/
 
 Tile::Tile(int _x, int _y)
 {
 	x = _x;
 	y = _y;
 	
-	pos = Vector2{ x, y };
+	//pos = Vector2{ x, y };
 }
 
 Tile::~Tile()
@@ -161,6 +161,31 @@ void Floor::Generate(int fillPercentage, bool useRandomSeed, int seed, int smoot
 	ProcessMap(connect);
 	
 	cout<<"Done Generating"<<std::endl;
+}
+
+void Floor::Clear()
+{
+	cout<<"Clearing"<<std::endl;
+	
+	_map.clear();
+	_rooms.clear();
+	_spaces.clear();
+	
+	for(int i = 0; i < _height; i++)
+	{
+		vector<int>tmp(_width);
+		_map.push_back(tmp);
+	}
+	
+	for(int x = 0; x < _width; x++)
+	{
+		for(int y = 0; y < _height; y++)
+		{
+			_map[x][y] = 1;
+		}
+	}
+	
+	cout<<"Done Clearing"<<std::endl;
 }
 
 //randomly fill a map given a fillPercentage

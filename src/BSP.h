@@ -19,9 +19,9 @@ class Leaf
 {
 	public:
 		Leaf(int X, int Y, int W, int H);
-		bool Split();
-		void CreateRooms();
-		void Generate(Leaf* head);
+		bool Split(Floor* grid);
+		void CreateRooms(Floor* grid);
+		void Generate(Floor* grid, int minSize, int maxSize);
 		
 		//have a graph struct; create a MST from these edges & re-add some edges 
 		//based on some heuristic
@@ -32,7 +32,8 @@ class Leaf
 	private:
 		int x, y, width, height;
 		int MINLEAFSIZE = 6;
-		Leaf* left, right;
+		Leaf* left;
+		Leaf* right;
 		Room* room;
 };
 

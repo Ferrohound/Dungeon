@@ -39,20 +39,20 @@ using std::string;
 using std::vector;
 using std::queue;
 
-typedef struct Vector2{
+/*typedef struct Vector2{
 	int x;
 	int y;
-} Vector2;
+} Vector2;*/
 
 
 
 struct Tile{
 	Tile();
 	Tile(int _x, int _y);
-	Tile(Vector2 position);
+	//Tile(Vector2 position);
 	~Tile();
 
-	Vector2 pos;
+	//Vector2 pos;
 	int x, y;
 };
 
@@ -134,7 +134,12 @@ class Floor{
 		void LoadFloor();
 		void SaveFloor();
 		
+		void Clear();
+		
 		vector < vector<int> > GetMap();
+		
+		int GetWidth() { return _width; }
+		int GetHeight() { return _height; }
 		
 		//this doesn't work for some reason
 		friend std::ostream &operator<<( std::ostream &output, const Floor &F )

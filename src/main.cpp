@@ -85,11 +85,11 @@ int main(int argx, char*argv[]){
 	
 	//delete engine;
 	
+	Floor* test = new Floor(50, 50, 50, true);
+	
 	//organic dungeon
 	if(argx == 1 )
 	{
-		
-		Floor* test = new Floor(50, 50, 50, true);
 		
 		cout<<(*test)<<std::endl;
 		
@@ -146,7 +146,11 @@ int main(int argx, char*argv[]){
 	
 	else
 	{
-		
+		test->Clear();
+		//cout<<(*test);
+		Leaf* tmp = new Leaf(0, 0, test->GetWidth(), test->GetHeight());
+		tmp->Generate(test, 10, 20);
+		cout<<(*test);
 	}
 	return 0;
 }

@@ -8,7 +8,7 @@
 
 CC = g++
 CFLAGS = -std=c++11
-INCLUDES = -I /src
+INCLUDES = -I/src
 LIBS = -L
 EXT ?= .exe
 
