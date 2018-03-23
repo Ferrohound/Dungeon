@@ -12,6 +12,7 @@ Author: Ferrohound
 #include <fstream>
 
 #include"world.h"
+#include "BSP.h"
 
 using std::cout;
 using std::cin;
@@ -84,59 +85,69 @@ int main(int argx, char*argv[]){
 	
 	//delete engine;
 	
-	Floor* test = new Floor(50, 50, 50, true);
-	
-	cout<<(*test)<<std::endl;
-	
-	int x;
-	cout<<"0. Generate New Map\n1. Save map\n2. Load Map\n3. StyleMap";
-		cout<<"\n4. OutlineMap\n5. Process\n-1. Quit\n\n";
-	cin >> x;
-	
-	while(x!=-1)
+	//organic dungeon
+	if(argx == 1 )
 	{
-		switch(x)
+		
+		Floor* test = new Floor(50, 50, 50, true);
+		
+		cout<<(*test)<<std::endl;
+		
+		int x;
+		cout<<"0. Generate New Map\n1. Save map\n2. Load Map\n3. StyleMap";
+			cout<<"\n4. OutlineMap\n5. Process\n-1. Quit\n\n";
+		cin >> x;
+		
+		while(x!=-1)
 		{
-			case 0:
-				test->Generate(50, true, 0, 5);
-				cout<<(*test)<<std::endl;
-			break;
+			switch(x)
+			{
+				case 0:
+					test->Generate(50, true, 0, 5);
+					cout<<(*test)<<std::endl;
+				break;
+				
+				case 1:
+					test->SaveFloor("test.txt");
+				break;
+				
+				case 2:
+					test->LoadFloor("test.txt");
+					cout<<(*test)<<std::endl;
+				break;
+				
+				case 3:
+					DrawStyleMap(test);
+				break;
+				
+				case 4:
+					DrawStyleOutlineMap(test);
+				break;
+				
+				case 5:
+					test->ProcessRooms(9, 3, 1);
+					cout<<(*test)<<std::endl;
+				break;
+				
+				case -1:
+				break;
+				
+				default:
+				break;
+			}
 			
-			case 1:
-				test->SaveFloor("test.txt");
-			break;
-			
-			case 2:
-				test->LoadFloor("test.txt");
-				cout<<(*test)<<std::endl;
-			break;
-			
-			case 3:
-				DrawStyleMap(test);
-			break;
-			
-			case 4:
-				DrawStyleOutlineMap(test);
-			break;
-			
-			case 5:
-				test->ProcessRooms(9, 3, 1);
-				cout<<(*test)<<std::endl;
-			break;
-			
-			case -1:
-			break;
-			
-			default:
-			break;
+			cout<<"0. Generate New Map\n1. Save map\n2. Load Map\n3. StyleMap";
+			cout<<"\n4. OutlineMap\n5. Process\n-1. Quit\n\n";
+			cin >> x;
 		}
 		
-		cout<<"0. Generate New Map\n1. Save map\n2. Load Map\n3. StyleMap";
-		cout<<"\n4. OutlineMap\n5. Process\n-1. Quit\n\n";
-		cin >> x;
+		delete test;
 	}
 	
-	delete test;
+	else
+	{
+		
+	}
 	return 0;
 }
 
