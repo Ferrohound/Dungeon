@@ -35,6 +35,7 @@ class Leaf
 		Leaf* left;
 		Leaf* right;
 		Room* room;
+		bool debug;
 };
 
 
