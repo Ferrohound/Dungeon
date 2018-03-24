@@ -85,7 +85,7 @@ int main(int argx, char*argv[]){
 	
 	//delete engine;
 	
-	Floor* test = new Floor(80, 50, 50, true);
+	Floor* test = new Floor(60, 50, 50, true);
 	
 	//organic dungeon
 	if(argx == 1 )
@@ -149,7 +149,7 @@ int main(int argx, char*argv[]){
 		test->Clear();
 		//cout<<(*test);
 		Leaf* tmp = new Leaf(0, 0, test->GetWidth(), test->GetHeight());
-		tmp->Generate(test, 7, 20);
+		tmp->Generate(test, 3, 15);
 		cout<<(*test);
 	}
 	return 0;

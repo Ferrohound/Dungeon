@@ -62,6 +62,7 @@ struct Tile{
 class Room{
 	public:
 		Room();
+		Room(int x, int y, int width, int height, vector< vector<int> > map);
 		Room(vector<Tile> _tiles, vector< vector<int> > map, int _id=-1);
 		~Room();
 		

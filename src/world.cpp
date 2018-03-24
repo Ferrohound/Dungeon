@@ -40,6 +40,41 @@ Room::Room()
 	connectedRooms.clear();
 	border.clear();
 }
+
+Room::Room(int x, int y, int width, int height, vector< vector<int> > map )
+{
+	tiles.clear();
+	
+	//pushback tiles from that region
+	for(int i = x; i < x+width; i++)
+	{
+		for(int j = y; j < y+height; j++)
+		{
+			tiles.push_back(Tile(i, j));
+		}
+	}
+	
+	size = tiles.size();
+	connectedRooms.clear();
+	border.clear();
+	
+	//create the border tiles list
+	for(int i = 0; i < size ; i++)
+	{
+		for(int x = tiles[i].x - 1; x < tiles[i].x +1 ; x++)
+		{
+			for(int y = tiles[i].y - 1; y < tiles[i].y + 1 ; y++)
+			{
+				if((x == tiles[i].x || y == tiles[i].y) && map[x][y] == 1)
+				{
+					border.push_back(tiles[i]);
+				}
+			}
+		}
+	}
+	
+}
+
 Room::Room(vector<Tile> _tiles, vector< vector<int> > map, int _id)
 {
 	accessible = false;
@@ -151,6 +186,8 @@ void Floor::Generate(int fillPercentage, bool useRandomSeed, int seed, int smoot
 		_map.push_back(tmp);
 	}
 	
+	//cout<<"Map width..."<<_map.size()<<std::endl;
+	
 	RandomFillMap(useRandomSeed, seed, fillPercentage);
 	
 	for(int i = 0; i < smoothing; i++)
@@ -171,9 +208,9 @@ void Floor::Clear()
 	_rooms.clear();
 	_spaces.clear();
 	
-	for(int i = 0; i < _height; i++)
+	for(int i = 0; i < _width; i++)
 	{
-		vector<int>tmp(_width);
+		vector<int>tmp(_height);
 		_map.push_back(tmp);
 	}
 	

@@ -120,11 +120,10 @@ void Leaf::CreateRooms(Floor* grid)
 		//cout<<"Generating room!"<<std::endl;
 		
 		//fill with more interesting rooms========================= TO DO
-		//use proper room class =================================== TO DO 
 		
 		int seed = time(NULL);
 		srand(seed);
-		//cout<<"Generating room!"<<std::endl;
+		
 		int roomSizeX = rand() % (width-4) + 3; //(Registry.randomNumber(3, width - 2), Registry.random
 		int roomSizeY = rand() % (height-4) + 3;
 		/*
@@ -134,18 +133,10 @@ void Leaf::CreateRooms(Floor* grid)
 		room = new Rectangle(x + roomPos.x, y + roomPos.y, roomSize.x, roomSize
 		
 		*/
-		//cout<<"Generating room!"<<std::endl;
-		
-		//cout<<"RoomSizeX " <<roomSizeX << " RoomSizeY "<<roomSizeY<<std::endl;
-		//cout<<"Width " <<roomSizeX << " Height "<<roomSizeY<<std::endl;
 		
 		int xPos = rand() % (width - roomSizeX - 1) + 1;
 		int yPos = rand() % (height - roomSizeY - 1) + 1;
-		
-		//cout<<"What's with the RNG?"<<std::endl;
 		//create a new room
-		//==================================================================TO DO 
-		//for now just change the tile values to see if it works
 		
 		for(int i = xPos; i < xPos + roomSizeX; i++)
 		{
@@ -155,6 +146,9 @@ void Leaf::CreateRooms(Floor* grid)
 				grid->_map[x + i][y + j] = 0;
 			}
 		}
+		
+		room = new Room(x + xPos, y + yPos, roomSizeX, roomSizeY, grid->_map);
+		grid->_rooms.push_back(room);
 		
 		//cout<<(*grid);
 		
@@ -208,20 +202,63 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	root->CreateRooms(grid);
 }
 
-vector< Edge<int> > Leaf::TriangulateEdges()
+//return a vector of all the rooms in this tree
+vector< Room* > GetRooms(Leaf* head)
+{
+	vector<Room*> out;
+	vector<Room*> in;
+	
+	if(head->left!=NULL)
+	{
+		in = GetRooms(head->left);
+		out.insert(out.end(), in.begin(), in.end());
+	}
+	
+	if(head->right!=NULL)
+	{
+		in = GetRooms(head->right);
+		out.insert(out.end(), in.begin(), in.end());
+	}
+	
+	if(head->room!=NULL)
+	{
+		out.push_back(head->room);
+		//return out;
+	}
+	
+	return out;
+}
+
+vector< Vector2<int> > GetMidpoints(vector< Room* > rooms)
+{
+	//rooms created with the Leaf class will have the upper left tile as the first
+	//and lower right as the last
+	
+	vector< Vector2<int> > out;
+	
+	for(int i = 0; i < rooms.size(); i++)
+	{
+		int midX = (rooms[i]->tiles[0].x + rooms[i]->tiles[rooms[i]->tiles.size()-1].x)/2;
+		int midY = (rooms[i]->tiles[0].y + rooms[i]->tiles[rooms[i]->tiles.size()-1].y)/2;
+		
+		out.push_back(Vector2<int>(midX, midY));
+	}
+	
+	return out;
+}
+
+vector< Edge<int> > Leaf::TriangulateEdges(Leaf* head)
 {
 	//get the midpoints from all of the rooms from function
 	//================================================================== TO DO 
 	/*
 	
 		function for getting all the rooms
-		function for getting all the midpoints from those rooms as 
-		point structures
 	
 	*/
 	//====================================================================
 	
-	std::vector<Vector2<int>> points;
+	std::vector<Vector2<int>> points = GetMidpoints(GetRooms(head));
 	Delaunay<int> triangulation;
 	
 	triangulation.triangulate(points);

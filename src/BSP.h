@@ -25,16 +25,17 @@ class Leaf
 		
 		//have a graph struct; create a MST from these edges & re-add some edges 
 		//based on some heuristic
-		vector< Edge<int> > TriangulateEdges();
+		vector< Edge<int> > TriangulateEdges(Leaf* head);
 		void FillMap(Floor* floor);
 	
+		Leaf* left;
+		Leaf* right;
 	
+		Room* room;
+		
 	private:
 		int x, y, width, height;
 		int MINLEAFSIZE = 6;
-		Leaf* left;
-		Leaf* right;
-		Room* room;
 		bool debug;
 };
 
