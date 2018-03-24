@@ -7,7 +7,7 @@ Leaf::Leaf(int X, int Y, int W, int H)
 	width = W;
 	height = H;
 	
-	debug = false;
+	debug = true;
 	
 	left = NULL;
 	right = NULL;
@@ -202,8 +202,8 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	
 	cout<<"Done splitting loop!"<<std::endl;
 	
-	if(debug)
-		cout<<(*grid);
+	/*if(debug)
+		cout<<(*grid);*/
 	
 	root->CreateRooms(grid);
 }

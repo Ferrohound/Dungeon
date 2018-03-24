@@ -145,9 +145,9 @@ void Floor::Generate(int fillPercentage, bool useRandomSeed, int seed, int smoot
 	_rooms.clear();
 	_spaces.clear();
 	
-	for(int i = 0; i < _height; i++)
+	for(int i = 0; i < _width; i++)
 	{
-		vector<int>tmp(_width);
+		vector<int>tmp(_height);
 		_map.push_back(tmp);
 	}
 	
