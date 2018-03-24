@@ -7,6 +7,8 @@ Leaf::Leaf(int X, int Y, int W, int H)
 	width = W;
 	height = H;
 	
+	debug = false;
+	
 	left = NULL;
 	right = NULL;
 }
@@ -66,9 +68,13 @@ bool Leaf::Split(Floor* grid)
 		left = new Leaf(x, y, width, split);
 		//cout<<y<<" plus "<<split<<" is "<<(y+split)<<std::endl;
 		right = new Leaf(x, y + split, width, height-split);
-		for(int i = x; i < x+width; i++)
+		
+		if(debug)
 		{
-			grid->_map[i][y+split] = 2;
+			for(int i = x; i < x+width; i++)
+			{
+				grid->_map[i][y+split] = 2;
+			}
 		}
 	}
 	else
@@ -76,9 +82,12 @@ bool Leaf::Split(Floor* grid)
 		left = new Leaf(x, y, split, height);
 		//cout<<x<<" plus "<<split<<" is "<<(x+split)<<std::endl;
 		right = new Leaf(x + split, y, width-split, height);
-		for(int i = y; i < y+height; i++)
+		if(debug)
 		{
-			grid->_map[x+split][i] = 2;
+			for(int i = y; i < y+height; i++)
+			{
+				grid->_map[x+split][i] = 2;
+			}
 		}
 	}
 	
@@ -108,13 +117,16 @@ void Leaf::CreateRooms(Floor* grid)
 	//leaf is ready to make a room
 	else
 	{
-		cout<<"Generating room!"<<std::endl;
+		//cout<<"Generating room!"<<std::endl;
+		
+		//fill with more interesting rooms========================= TO DO
+		//use proper room class =================================== TO DO 
 		
 		int seed = time(NULL);
 		srand(seed);
 		//cout<<"Generating room!"<<std::endl;
-		int roomSizeX = rand() % (width-2) + 3; //(Registry.randomNumber(3, width - 2), Registry.random
-		int roomSizeY = rand() % (height-2) + 3;
+		int roomSizeX = rand() % (width-4) + 3; //(Registry.randomNumber(3, width - 2), Registry.random
+		int roomSizeY = rand() % (height-4) + 3;
 		/*
 		// place the room within the Leaf, but don't put it right 
 		// against the side of the Leaf (that would merge rooms together)
@@ -124,13 +136,13 @@ void Leaf::CreateRooms(Floor* grid)
 		*/
 		//cout<<"Generating room!"<<std::endl;
 		
-		int xPos, yPos;
-		
 		//cout<<"RoomSizeX " <<roomSizeX << " RoomSizeY "<<roomSizeY<<std::endl;
+		//cout<<"Width " <<roomSizeX << " Height "<<roomSizeY<<std::endl;
 		
-		xPos = rand() % (width - roomSizeX - 1) + 1;
-		yPos = rand() % (height - roomSizeY - 1) + 1;
-		cout<<"What's with the RNG?"<<std::endl;
+		int xPos = rand() % (width - roomSizeX - 1) + 1;
+		int yPos = rand() % (height - roomSizeY - 1) + 1;
+		
+		//cout<<"What's with the RNG?"<<std::endl;
 		//create a new room
 		//==================================================================TO DO 
 		//for now just change the tile values to see if it works
@@ -189,7 +201,10 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	}
 	
 	cout<<"Done splitting loop!"<<std::endl;
-	cout<<(*grid);
+	
+	if(debug)
+		cout<<(*grid);
+	
 	root->CreateRooms(grid);
 }
 
