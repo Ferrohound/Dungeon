@@ -1,4 +1,5 @@
 #include "BSP.h"
+#include "Graph.h"
 
 Leaf::Leaf(int X, int Y, int W, int H)
 {
@@ -200,6 +201,27 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 		cout<<(*grid);*/
 	
 	root->CreateRooms(grid);
+	
+	//get the edges and make that sweet sweet graph
+	vector< Edge<int> > edges = TriangulateEdges(root);
+	
+	//=================================================================== TO DO
+	
+	//get MST; add some percentage of the remaining edges to the tree
+	//pass the list of edges to some function to draw the paths
+	
+	//====================================================================
+	Graph G;
+	
+	DrawHallways(edges);
+	
+}
+
+//draw halls from the given 
+//==========================================================================TO DO
+void Leaf::DrawHallways(vector< Edge<int> > edges)
+{
+	//connect rooms with vertical and horizonal lines or randomly sized rectangles
 }
 
 //return a vector of all the rooms in this tree
@@ -253,7 +275,7 @@ vector< Edge<int> > Leaf::TriangulateEdges(Leaf* head)
 	//================================================================== TO DO 
 	/*
 	
-		function for getting all the rooms
+		function for getting all the rooms (maybe?)
 	
 	*/
 	//====================================================================

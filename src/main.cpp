@@ -84,7 +84,6 @@ int main(int argx, char*argv[]){
 	//engine->run(0);
 	
 	//delete engine;
-	
 	Floor* test = new Floor(60, 50, 50, true);
 	
 	//organic dungeon

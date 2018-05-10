@@ -27,6 +27,8 @@ struct Action{
 	bool _keyDown;
 };
 
+
+
 class Engine{
 	public:
 		//constructor and destructor
@@ -39,7 +41,7 @@ class Engine{
 		void intro();
 		void menu();
 		void explore();
-		void battle(Enemy** enemies);
+		///void battle(Enemy** enemies);
 		
 		//actions within each game state
 		//for now just move in explore
@@ -56,7 +58,7 @@ class Engine{
 		
 	private:
 		//array of all the worlds
-		World** _universe;
+		//World** _universe;
 		//index of whatever world the player is on
 		int _index;
 		//the input key
