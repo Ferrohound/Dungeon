@@ -1,5 +1,4 @@
 #include "BSP.h"
-#include "Graph.h"
 
 //initialize room vector, probably not doing this right..
 vector<Leaf*> Leaf::leaves = vector<Leaf*>();
@@ -220,24 +219,82 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	
 	//get the edges and make that sweet sweet graph
 	vector< Edge<int> > edges = TriangulateEdges(root);
-	
+
+	//================================================================== TO DO
+	//need a function to turn that vector of edges into a vector of Links
+	Graph<Room*> G = Graph<Room*>();
+	//populate graph
+	for(int j = 0; j < leaves.size(); j++)
+	{
+		Node<Room*> n = Node<Room*>();
+		n.data = leaves[j]->room;
+		G.AddNode(&n);
+	}
+
+	vector< Link<Room*> > halls = GetHalls(&G, edges); 
+
+
+
 	//=================================================================== TO DO
 	
 	//get MST; add some percentage of the remaining edges to the tree
-	//pass the list of edges to some function to draw the paths
+	//say, the final tree must be at least 60% of the original
 	
 	//====================================================================
-	Graph G = Graph();
 	
-	//DrawHallways(edges);
+	//pass the edges in the graph to ConnectRooms to draw the paths
+	DrawHallways(grid, halls);
 	
 }
 
-//draw halls from the given 
-//==========================================================================TO DO
-void Leaf::DrawHallways(vector< Edge<int> > edges)
+//===================================================== TO DO
+//improve this, for this shall be awful
+vector< Link <Room*> > Leaf::GetHalls(Graph<Room*> *g,  vector< Edge<int> > e )
 {
-	//connect rooms with vertical and horizonal lines or randomly sized rectangles
+	vector< Link<Room*> > out = vector< Link<Room*> >();
+
+	for(int i = 0; i < e.size(); i++)
+	{
+		Room* R1, *R2;
+		Node<Room*> *N1, *N2;
+		//need to have the nodes from the graph as well
+		for(int j = 0; j < leaves.size(); j++)
+		{
+			int midX = (leaves[j]->room->tiles[0].x + leaves[j]->room->tiles[leaves[j]->room->tiles.size()-1].x)/2;
+			int midY = (leaves[j]->room->tiles[0].y + leaves[j]->room->tiles[leaves[j]->room->tiles.size()-1].y)/2;
+
+			if(e[i].p1.x == midX && e[i].p1.x == midX)
+			{
+				R1 = leaves[j]->room;
+				N1 = g->GetNode(R1);
+
+				//find the corresponding node from the graph
+			}
+
+			if(e[i].p2.x == midX && e[i].p2.x == midX)
+			{
+				R2 = leaves[j]->room;
+				N2 = g->GetNode(R2);
+			}
+		}
+
+		Link<Room*> L = Link<Room*>();
+		L.to = N1;
+		L.from = N2;
+		out.push_back(L);
+	}
+
+	return out;
+}
+
+//draw halls from the given edges
+void Leaf::DrawHallways(Floor* grid, vector< Link<Room*> > edges)
+{
+	for(int i = 0; i < edges.size(); i++)
+	{
+		//draw that sweet, sweet angular path
+		grid->ConnectRooms(edges[i].to->data, edges[i].from->data, true);
+	}
 }
 
 //return a vector of all the rooms in this tree

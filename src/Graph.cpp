@@ -1,17 +1,19 @@
 #include "Graph.h"
 
+template <class T>
 Graph::Graph()
 {
-    edges = vector<Link>();
-    nodes = vector<Node*>();
+    edges = vector< Link< Node<T> > >();
+    nodes = vector< Node<T>* >();
     size = 0;
 }
 
 //========================================================== TO DO
 //run a check first
-void Graph::AddEdge(Node* A, Node* b, int weight)
+template <class T>
+void Graph::AddEdge(Node<T>* A, Node<T>* b, int weight)
 {
-    Link l = Link();
+    Link l = Link<T>();
     l.from = A;
     l.to = b;
     l.weight = weight;
@@ -33,9 +35,10 @@ void Graph::AddEdge(Node* A, Node* b, int weight)
 }
 
 //do a check on if the edge is already present first
-void Graph::AddEdge(Link E)
+template <class T>
+void Graph::AddEdge(Link<T> E)
 {
-    std::vector<Link>::iterator it;
+    std::vector< Link<T> >::iterator it;
     it = std::find(edges.begin(), edges.end(), E);
 
     if(it == edges.end())
@@ -48,9 +51,10 @@ void Graph::AddEdge(Link E)
 
 
 //add a check to see if it isn't already in the vector of nodes
-void Graph::AddNode(Node* A)
+template <class T>
+void Graph::AddNode(Node<T>* A)
 {
-    std::vector<Node*>::iterator it;
+    std::vector< Node<T>* >::iterator it;
     it = std::find(nodes.begin(), nodes.end(), A);
 
     if(it == nodes.end())
@@ -60,8 +64,8 @@ void Graph::AddNode(Node* A)
     size++;
 }
 
-
-void Graph::RemoveNode(Node* A)
+template <class T>
+void Graph::RemoveNode(Node<T>* A)
 {
     if(size == 0)
     {
@@ -77,7 +81,8 @@ void Graph::RemoveNode(Node* A)
 }
 
 //========================================================== TO DO
-void Graph::RemoveEdge(Link L)
+template <class T>
+void Graph::RemoveEdge(Link<T> L)
 {
     if(edges.size() == 0)
     {
@@ -86,7 +91,7 @@ void Graph::RemoveEdge(Link L)
     //logic to remove the edge from edges list
     //confused about this too...
 
-    std::vector<Link>::iterator it;
+    std::vector< Link<T> >::iterator it;
     it = std::find(edges.begin(), edges.end(), L);
     edges.erase(it);
 
@@ -94,13 +99,14 @@ void Graph::RemoveEdge(Link L)
 
 //remove an edge from the graph while still keeping it
 //this function doesn't make a whole lot of sense in retrospect..
-Link Graph::PopEdge(Link L)
+template <class T>
+Link<T>* Graph::PopEdge(Link L)
 {
 
     std::vector<Link>::iterator it;
     it = std::find(edges.begin(), edges.end(), L);
     
-    Link out = *it;
+    Link* out = it;
     
     edges.erase(it);
     
@@ -108,12 +114,25 @@ Link Graph::PopEdge(Link L)
 
 }
 
+template <class T>
+Node<T>* Graph::GetNode(T data)
+{
+    std::vector< Node<T>* >::iterator it;
+    it = std::find(nodes.begin(), nodes.end(), A);
+
+    if(it == nodes.end())
+        return NULL;
+    return it;
+}
+
+template <class T>
 void Graph::Save(string path)
 {
 
 }
 
 //create a minimum spanning tree of this graph
+template <class T>
 Graph Graph::MST()
 {
 

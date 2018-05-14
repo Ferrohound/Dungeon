@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "world.h"
+#include "Graph.h"
 
 //for triangulation, move this elsewhere when the time comes
 #include "vector2.h"
@@ -28,7 +29,8 @@ class Leaf
 		//have a graph struct; create a MST from these edges & re-add some edges 
 		//based on some heuristic
 		vector< Edge<int> > TriangulateEdges(Leaf* head);
-		void DrawHallways(vector< Edge<int> > edges);
+		void DrawHallways(Floor* grid, vector< Link <Room*> > edges);
+		vector< Link <Room*> > GetHalls( Graph<Room*> *g, vector< Edge<int> > e);
 		void FillMap(Floor* floor);
 	
 		Leaf* left;
@@ -36,7 +38,7 @@ class Leaf
 	
 		Room* room;
 
-		static vector<Leaf*> leaves;
+		static vector< Leaf* > leaves;
 		
 	private:
 		int x, y, width, height;

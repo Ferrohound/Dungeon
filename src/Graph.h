@@ -37,27 +37,27 @@ struct AdjGraph
 //should probably connect this to the dungeon in one way or another..
 
 //template?
-//template <class T>
+template <class T>
 struct Node
 {
     int dest;
-    vector< Link /*<T>*/ > edges;
-    //T data;
+    vector< Link <T> > edges;
+    T data;
     
     //============================================================= TO DO
     friend bool operator== (const Node& n1, const Node& n2)
     {
-        return (n1.dest == n2.dest);
+        return (n1.data == n2.data);
     }
 };
 
 //template?
 //worry about this later...
-//template <class T>
+template <class T>
 struct Link
 {
-    Node/*<T>*/* to;
-    Node/*<T>*/* from;
+    Node<T>* to;
+    Node<T>* from;
     int weight;
 
     friend bool operator== (const Link &L1, const Link &L2)
@@ -72,21 +72,23 @@ struct Link
     }
 };
 
-//template <class T>
+template <class T>
 class Graph
 {
     public:
         //================================functions
         Graph();
 
-        void AddEdge(Node/*<T>*/* A, Node/*<T>*/* b, int weight = 1);
-        void AddEdge(Link/*<T>*/ E);
-        void AddNode(Node/*<T>*/* A);
-        void RemoveNode(Node/*<T>*/* A);
-        void RemoveEdge(Link/*<T>*/ L);
-        Link PopEdge(Link/*<T>*/ L);
+        void AddEdge(Node<T>* A, Node<T>* b, int weight = 1);
+        void AddEdge(Link<T> E);
+        void AddNode(Node<T>* A);
+        void RemoveNode(Node<T>* A);
+        void RemoveEdge(Link<T> L);
+        
+        Link<T>* PopEdge( Link<T> L);
+        Node<T>* GetNode(T data);
 
-        Graph MST();
+        Graph<T> MST();
 
         //function to save an ascii and coordinates of a tile in the room/hallway
         //use floodfill to get the tiles in the room and rebuild
@@ -103,6 +105,6 @@ class Graph
             List
             Vector
         */
-        vector< Link /*<T>*/ > edges;
-        vector< Node/*<T>*/* > nodes;
+        vector< Link<T> > > edges;
+        vector< Node<T>* > nodes;
 };

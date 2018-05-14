@@ -122,7 +122,7 @@ class Floor{
 		void SmoothRoom(Room* room);
 		
 		void ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility = false);
-		void ConnectRooms(Room* A, Room* B);
+		void ConnectRooms(Room* A, Room* B, bool angular = false);
 		void CreatePassage(Room* A, Room* B, Tile tA, Tile tB);
 		void DrawCircle(Tile t, int r);
 		

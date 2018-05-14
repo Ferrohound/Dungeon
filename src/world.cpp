@@ -511,7 +511,7 @@ int Floor::GetAvgWallValue(int sx, int sy, int radius)
 	return avg;
 }
 
-void Floor::ConnectRooms(Room* A, Room* B)
+void Floor::ConnectRooms(Room* A, Room* B, bool angular)
 {
 	cout<<"Bump";
 	int lowestD = (int) (pow((A->border[0].x - B->border[0].x), 2) +
@@ -541,7 +541,17 @@ void Floor::ConnectRooms(Room* A, Room* B)
 		}
 	}
 	
-	CreatePassage(A, B, bestTileA, bestTileB);
+	//==================================================== TO DO
+	//create an angular, maybe even jagged connection
+	if(angular)
+	{
+		CreatePassage(A, B, bestTileA, bestTileB);
+	}
+	//otherwise, follow gradient
+	else
+	{
+		CreatePassage(A, B, bestTileA, bestTileB);
+	}
 }
 
 void Floor::ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility)
