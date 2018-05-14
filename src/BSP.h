@@ -15,6 +15,8 @@
 
 using std::vector;
 
+//split this up into leaf and BSP_Tree at some point
+
 class Leaf
 {
 	public:
@@ -33,6 +35,8 @@ class Leaf
 		Leaf* right;
 	
 		Room* room;
+
+		static vector<Leaf*> leaves;
 		
 	private:
 		int x, y, width, height;

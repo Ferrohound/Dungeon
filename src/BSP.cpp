@@ -1,8 +1,16 @@
 #include "BSP.h"
 #include "Graph.h"
 
+//initialize room vector, probably not doing this right..
+vector<Leaf*> Leaf::leaves = vector<Leaf*>();
+
 Leaf::Leaf(int X, int Y, int W, int H)
 {
+	/*if(leaves == NULL)
+	{
+		leaves = vector<Room*>();
+	}*/
+
 	x = X;
 	y = Y;
 	width = W;
@@ -13,6 +21,7 @@ Leaf::Leaf(int X, int Y, int W, int H)
 	left = NULL;
 	right = NULL;
 }
+
 
 bool Leaf::Split(Floor* grid)
 {
@@ -93,7 +102,8 @@ bool Leaf::Split(Floor* grid)
 	}
 	
 	//cout<<(*grid);
-	
+	//this is a leaf node
+	leaves.push_back(this);
 	//cout<<"Successfully split"<<std::endl;
 	return true;
 }
@@ -103,6 +113,9 @@ void Leaf::CreateRooms(Floor* grid)
 {
 	//cout<<"Creating Rooms..."<<std::endl;
 	
+	//not at the root room yet, go deeper
+	//maybe add a list of leaf notdes so we know which leaves are the rooms without having to create this list
+	//later
 	if( left!=NULL || right!=NULL)
 	{
 		if(left!=NULL)
@@ -144,7 +157,10 @@ void Leaf::CreateRooms(Floor* grid)
 			for(int j = yPos; j < yPos + roomSizeY; j++)
 			{
 				//cout<<x<<" "<<y<<std::endl;
-				grid->_map[x + i][y + j] = 0;
+
+				//if this room tile is within bounds, do the do
+				if(grid->InMapRange(x+1, y+j))
+					grid->_map[x + i][y + j] = 0;
 			}
 		}
 		
@@ -211,9 +227,9 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	//pass the list of edges to some function to draw the paths
 	
 	//====================================================================
-	Graph G;
+	Graph G = Graph();
 	
-	DrawHallways(edges);
+	//DrawHallways(edges);
 	
 }
 
@@ -269,18 +285,34 @@ vector< Vector2<int> > GetMidpoints(vector< Room* > rooms)
 	return out;
 }
 
+//to save myself some trouble
+vector <Vector2<int> > GetMidpoints(vector< Leaf* > leaves)
+{
+	vector<Room*> tmp = vector<Room*>();
+
+	for(int i = 0; i < leaves.size(); i++)
+	{
+		tmp.push_back(leaves[i]->room);
+	}
+
+	return GetMidpoints(tmp);
+}
+
+
+
 vector< Edge<int> > Leaf::TriangulateEdges(Leaf* head)
 {
-	//get the midpoints from all of the rooms from function
 	//================================================================== TO DO 
 	/*
 	
-		function for getting all the rooms (maybe?)
+		function for getting all the rooms in a particular sector may
+		be more useful in the long run
 	
 	*/
 	//====================================================================
 	
-	std::vector<Vector2<int>> points = GetMidpoints(GetRooms(head));
+	//get the midpoints from all of the rooms from function
+	std::vector<Vector2<int>> points = GetMidpoints(leaves);
 	Delaunay<int> triangulation;
 	
 	triangulation.triangulate(points);
