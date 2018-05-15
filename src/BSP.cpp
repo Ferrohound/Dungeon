@@ -255,6 +255,7 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 
 //===================================================== TO DO
 //improve this, for this shall be awful
+//perhaps aim to populate the graph as you go along to save on time
 vector< Link <Room*> > Leaf::GetHalls(Graph<Room*> *g,  vector< Edge<int> > e )
 {
 	vector< Link<Room*> > out = vector< Link<Room*> >();

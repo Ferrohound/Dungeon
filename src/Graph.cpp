@@ -1,7 +1,7 @@
 #include "Graph.h"
 
 template <class T>
-Graph::Graph()
+Graph<T>::Graph()
 {
     edges = vector< Link< Node<T> > >();
     nodes = vector< Node<T>* >();
@@ -11,14 +11,14 @@ Graph::Graph()
 //========================================================== TO DO
 //run a check first
 template <class T>
-void Graph::AddEdge(Node<T>* A, Node<T>* b, int weight)
+void Graph<T>::AddEdge(Node<T>* A, Node<T>* b, int weight)
 {
-    Link l = Link<T>();
+    Link<T> l = Link<T>();
     l.from = A;
     l.to = b;
     l.weight = weight;
 
-    std::vector<Link>::iterator it;
+    typename std::vector< Link<T> >::iterator it;
     //it = std::find(A->edges.begin(), A->edges.end(), l);
     it = std::find(edges.begin(), edges.end(), l);
 
@@ -36,9 +36,9 @@ void Graph::AddEdge(Node<T>* A, Node<T>* b, int weight)
 
 //do a check on if the edge is already present first
 template <class T>
-void Graph::AddEdge(Link<T> E)
+void Graph<T>::AddEdge(Link<T> E)
 {
-    std::vector< Link<T> >::iterator it;
+    typename std::vector< Link<T> >::iterator it;
     it = std::find(edges.begin(), edges.end(), E);
 
     if(it == edges.end())
@@ -52,9 +52,9 @@ void Graph::AddEdge(Link<T> E)
 
 //add a check to see if it isn't already in the vector of nodes
 template <class T>
-void Graph::AddNode(Node<T>* A)
+void Graph<T>::AddNode(Node<T>* A)
 {
-    std::vector< Node<T>* >::iterator it;
+    typename std::vector< Node<T>* >::iterator it;
     it = std::find(nodes.begin(), nodes.end(), A);
 
     if(it == nodes.end())
@@ -65,7 +65,7 @@ void Graph::AddNode(Node<T>* A)
 }
 
 template <class T>
-void Graph::RemoveNode(Node<T>* A)
+void Graph<T>::RemoveNode(Node<T>* A)
 {
     if(size == 0)
     {
@@ -82,7 +82,7 @@ void Graph::RemoveNode(Node<T>* A)
 
 //========================================================== TO DO
 template <class T>
-void Graph::RemoveEdge(Link<T> L)
+void Graph<T>::RemoveEdge(Link<T> L)
 {
     if(edges.size() == 0)
     {
@@ -91,7 +91,7 @@ void Graph::RemoveEdge(Link<T> L)
     //logic to remove the edge from edges list
     //confused about this too...
 
-    std::vector< Link<T> >::iterator it;
+    typename std::vector< Link<T> >::iterator it;
     it = std::find(edges.begin(), edges.end(), L);
     edges.erase(it);
 
@@ -100,13 +100,13 @@ void Graph::RemoveEdge(Link<T> L)
 //remove an edge from the graph while still keeping it
 //this function doesn't make a whole lot of sense in retrospect..
 template <class T>
-Link<T>* Graph::PopEdge(Link L)
+Link<T>* Graph<T>::PopEdge(Link<T> L)
 {
 
-    std::vector<Link>::iterator it;
+    typename std::vector< Link<T> >::iterator it;
     it = std::find(edges.begin(), edges.end(), L);
     
-    Link* out = it;
+    Link<T>* out = it;
     
     edges.erase(it);
     
@@ -115,10 +115,10 @@ Link<T>* Graph::PopEdge(Link L)
 }
 
 template <class T>
-Node<T>* Graph::GetNode(T data)
+Node<T>* Graph<T>::GetNode(T data)
 {
-    std::vector< Node<T>* >::iterator it;
-    it = std::find(nodes.begin(), nodes.end(), A);
+    typename std::vector< Node<T>* >::iterator it;
+    it = std::find(nodes.begin(), nodes.end(), data);
 
     if(it == nodes.end())
         return NULL;
@@ -126,18 +126,18 @@ Node<T>* Graph::GetNode(T data)
 }
 
 template <class T>
-void Graph::Save(string path)
+void Graph<T>::Save(string path)
 {
 
 }
 
 //BFS check if two nodes are connected
 template <class T>
-bool Graph::Connected(Node<T>* A, Node<T>* B)
+bool Graph<T>::Connected(Node<T>* A, Node<T>* B)
 {
     std::queue< Node<T>* > Q;
-    std::map<T, bool> visited;
-    std::map<T, bool>::iterator it;
+    typename std::map<T, bool> visited;
+    typename std::map<T, bool>::iterator it;
 
     Node<T> *current;
     Q.push(A);
@@ -169,7 +169,7 @@ bool Graph::Connected(Node<T>* A, Node<T>* B)
 
 //create a minimum spanning tree of this graph
 template <class T>
-vector< Link<T> > Graph::MST()
+vector< Link<T> > Graph<T>::MST()
 {
     //algorithm...
     /*

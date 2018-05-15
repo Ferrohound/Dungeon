@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "-g", "world.cpp", "BSP.cpp",  "main.cpp", "-o", "main.exe", "-I./external/triangulation", "-std=c++11"
+                "-g", "world.cpp", "BSP.cpp", "main.cpp", "-o", "main.exe", "-I./external/triangulation", "-std=c++11"
             ],
             "group": {
                 "kind": "build",

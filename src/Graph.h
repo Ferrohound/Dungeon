@@ -39,6 +39,10 @@ struct AdjGraph
 //Node and edge style
 //should probably connect this to the dungeon in one way or another..
 
+
+template <class T>
+class Link;
+
 //template?
 template <class T>
 struct Node
@@ -75,26 +79,192 @@ struct Link
     }
 };
 
+//since it's a template, implementation has to be in header
 template <class T>
 class Graph
 {
     public:
         //================================functions
-        Graph();
+        Graph()
+        {
+            edges = vector< Link<T> >();
+            nodes = vector< Node<T>* >();
+            size = 0;
+        }
 
-        void AddEdge(Node<T>* A, Node<T>* b, int weight = 1);
-        void AddEdge(Link<T> E);
-        void AddNode(Node<T>* A);
-        void RemoveNode(Node<T>* A);
-        void RemoveEdge(Link<T> L);
+        void AddEdge(Node<T>* A, Node<T>* b, int weight = 1)
+        {
+            Link<T> l = Link<T>();
+            l.from = A;
+            l.to = b;
+            l.weight = weight;
+
+            typename std::vector< Link<T> >::iterator it;
+            //it = std::find(A->edges.begin(), A->edges.end(), l);
+            it = std::find(edges.begin(), edges.end(), l);
+
+            //i simply do not understand why this doesn't work.
+            //this would cut down on the time dramatically, but whatever i guess.
+            //if(it == A->edges.end())
+            if(it == edges.end())
+            {
+                return;
+            }
+
+            A->edges.push_back(l);
+            edges.push_back(l);
+        }
+
+        void AddEdge(Link<T> E)
+        {
+            typename std::vector< Link<T> >::iterator it;
+            it = std::find(edges.begin(), edges.end(), E);
+
+            if(it == edges.end())
+            {
+                return;
+            }
+
+            edges.push_back(E);
+        }
+
+        void AddNode(Node<T>* A)
+        {
+            typename std::vector< Node<T>* >::iterator it;
+            it = std::find(nodes.begin(), nodes.end(), A);
+
+            if(it == nodes.end())
+                return;
+
+            nodes.push_back(A);
+            size++;
+        }
+
+        void RemoveNode(Node<T>* A)
+        {
+            if(size == 0)
+            {
+                return;
+            }
+            //logic to remove the node from nodes list
+            //and probably remove all of its edges as well
+
+            nodes.erase(nodes.begin(), nodes.end());
+
+            //no point in having size, just return nodes.size();
+            size--;
+        }
+
+        void RemoveEdge(Link<T> L)
+        {
+            if(edges.size() == 0)
+            {
+                return;
+            }
+            //logic to remove the edge from edges list
+            //confused about this too...
+
+            typename std::vector< Link<T> >::iterator it;
+            it = std::find(edges.begin(), edges.end(), L);
+            edges.erase(it);
+        }
 
         //BFS check if two nodes are connected
-        bool Connected(Node<T>* A, Node<T>* B);
-        
-        Link<T>* PopEdge( Link<T> L);
-        Node<T>* GetNode(T data);
+        bool Connected(Node<T>* A, Node<T>* B)
+        {
+            std::queue< Node<T>* > Q;
+            typename std::map<T, bool> visited;
+            typename std::map<T, bool>::iterator it;
 
-        vector< Link<T> > MST();
+            Node<T> *current;
+            Q.push(A);
+
+            while(Q.size()!=0)
+            {
+                //plz
+                current = Q.front();
+                Q.pop();
+
+                visited[current->data] = true;
+                
+                if(current == B)
+                {
+                    return true;
+                }
+
+                //add unvisited nodes to the queue
+                for(int i = 0; i < current->edges.size(); i++)
+                {
+                    //if the value isn't in there, then add it to the queue
+                    it = visited.find(current->edges[i].to->data);
+                    if(it == visited.end())
+                    {
+                        Q.push(current->edges[i].to);
+                    }
+                }
+            }
+
+            return false;
+        }
+        
+        Link<T>* PopEdge( Link<T> L)
+        {
+            typename std::vector< Link<T> >::iterator it;
+            it = std::find(edges.begin(), edges.end(), L);
+            
+            Link<T>* out = it;
+            
+            edges.erase(it);
+            
+            return out;
+        }
+
+        Node<T>* GetNode(T data)
+        {
+            Node<T> tmp;
+            tmp.data = data;
+
+            typename std::vector< Node<T>* >::iterator it;
+            it = std::find(nodes.begin(), nodes.end(), &tmp);
+
+            if(it == nodes.end())
+                return NULL;
+            return (*it);
+        }
+
+        vector< Link<T> > MST()
+        {
+            //algorithm...
+            /*
+                sort edges by weight
+                while the list of edges isn't empty, remove an edge from the set
+                if this edge connects two unconnected nodes, add it to the MST
+
+            */
+            vector< Link<T> > out;
+            vector< Link<T> > tmp = edges;
+            std::sort(tmp.begin(), tmp.end());
+
+            std::queue< Link<T> > Q;
+
+            for(int i = 0; i < tmp.size(); i++)
+            {
+                Q.push(tmp[i]);
+            }
+
+            while(Q.size()!=0)
+            {
+                //plz..
+                Link<T> l = Q.front();
+                Q.pop();
+
+                if(!Connected(l.to, l.from))
+                {
+                    out.push_back(l);
+                }
+            }
+            return out;
+        }
 
         //function to save an ascii and coordinates of a tile in the room/hallway
         //use floodfill to get the tiles in the room and rebuild
@@ -111,6 +281,6 @@ class Graph
             List
             Vector
         */
-        vector< Link<T> > > edges;
+        vector< Link<T> > edges;
         vector< Node<T>* > nodes;
 };
