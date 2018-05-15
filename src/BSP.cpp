@@ -7,7 +7,7 @@ Leaf::Leaf(int X, int Y, int W, int H)
 {
 	/*if(leaves == NULL)
 	{
-		leaves = vector<Room*>();
+		leaves = vector<Room>();
 	}*/
 
 	x = X;
@@ -231,29 +231,38 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	cout<<"Populating Graph..."<<std::endl;
 	//================================================================== TO DO
 	//need a function to turn that vector of edges into a vector of Links
-	Graph<Room*> G = Graph<Room*>();
+	Graph<Room> G = Graph<Room>();
 	//populate graph
-	for(int j = 0; j < leaves.size(); j++)
+	for(int j = 0; j < LeafNodes.size(); j++)
 	{
-		Node<Room*> n = Node<Room*>();
-		n.data = leaves[j]->room;
-		G.AddNode(&n);
+		//cout<<"?? "<<LeafNodes[j]->room<<std::endl;
+		Node<Room> n = Node<Room>();
+		n.data = LeafNodes[j]->room;
+		//cout<<"!! "<<n.data<<std::endl;
+		//G.AddNode(&n);
+		G.AddNode(LeafNodes[j]->room);
 	}
 
-	cout<<"Done populating graph!"<<std::endl;
+	cout<<"Done populating graph with "<< G.Size() <<" nodes!"<<std::endl;
+
+	/*vector< Node<Room>* > fuckOff = G.GetNodes();
+	for(int j = 0; j < fuckOff.size(); j++)
+	{
+		cout<<"SHIT "<<fuckOff[j]->data<<std::endl;
+	}*/
 
 	cout<<"Creating links..."<<std::endl;
-	vector< Link<Room*> > halls = GetHalls(&G, edges); 
+	vector< Link<Room> > halls = GetHalls(&G, edges); 
 	cout<<"Done creating "<<halls.size()<<" links!"<<std::endl;
 
 	//=================================================================== TO DO
 	
 	//get MST; add some percentage of the remaining edges to the tree
 	cout<<"Generating Minimum Spanning Tree..."<<std::endl;
-	vector< Link<Room*> > MST = G.MST();
+	vector< Link<Room> > MST = G.MST();
 	cout<<"Done Generating sized "<<MST.size()<<" Tree."<<std::endl;
 
-	vector< Link<Room*> > tmp = halls;
+	vector< Link<Room> > tmp = halls;
 	std::sort(tmp.begin(), tmp.end());
 	//say, the final tree must be at least 60% of the original
 	//randomize which links get re-added later..
@@ -279,14 +288,14 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 //===================================================== TO DO
 //improve this, for this shall be awful
 //perhaps aim to populate the graph as you go along to save on time
-vector< Link <Room*> > Leaf::GetHalls(Graph<Room*> *g,  vector< Edge<int> > e )
+vector< Link <Room> > Leaf::GetHalls(Graph<Room> *g,  vector< Edge<int> > e )
 {
-	vector< Link<Room*> > out = vector< Link<Room*> >();
+	vector< Link<Room> > out;
 
 	for(int i = 0; i < e.size(); i++)
 	{
-		Room* R1, *R2;
-		Node<Room*> *N1, *N2;
+		Room *R1, *R2;
+		Node<Room> *N1, *N2;
 		//need to have the nodes from the graph as well
 		for(int j = 0; j < LeafNodes.size(); j++)
 		{
@@ -295,7 +304,7 @@ vector< Link <Room*> > Leaf::GetHalls(Graph<Room*> *g,  vector< Edge<int> > e )
 			int midX = LeafNodes[j]->room->mX;
 			int midY = LeafNodes[j]->room->mY;
 
-			if(e[i].p1.x == midX && e[i].p1.x == midX)
+			if(e[i].p1.x == midX && e[i].p1.y == midY)
 			{
 				R1 = LeafNodes[j]->room;
 				N1 = g->GetNode(R1);
@@ -303,24 +312,30 @@ vector< Link <Room*> > Leaf::GetHalls(Graph<Room*> *g,  vector< Edge<int> > e )
 				//find the corresponding node from the graph
 			}
 
-			if(e[i].p2.x == midX && e[i].p2.x == midX)
+			if(e[i].p2.x == midX && e[i].p2.y == midY)
 			{
 				R2 = LeafNodes[j]->room;
 				N2 = g->GetNode(R2);
 			}
 		}
 
-		Link<Room*> L = Link<Room*>();
+		Link<Room> L = Link<Room>();
 		L.to = N1;
 		L.from = N2;
+		if(N1 == NULL || N2 == NULL)
+		{
+			//cout<<"oh cmon..."<<std::endl;
+			continue;
+		}
 		out.push_back(L);
+		g->AddEdge(L);
 	}
 
 	return out;
 }
 
 //draw halls from the given edges
-void Leaf::DrawHallways(Floor* grid, vector< Link<Room*> > edges)
+void Leaf::DrawHallways(Floor* grid, vector< Link<Room> > edges)
 {
 	for(int i = 0; i < edges.size(); i++)
 	{

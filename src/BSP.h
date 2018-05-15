@@ -29,8 +29,8 @@ class Leaf
 		//have a graph struct; create a MST from these edges & re-add some edges 
 		//based on some heuristic
 		vector< Edge<int> > TriangulateEdges(Leaf* head);
-		void DrawHallways(Floor* grid, vector< Link <Room*> > edges);
-		vector< Link <Room*> > GetHalls( Graph<Room*> *g, vector< Edge<int> > e);
+		void DrawHallways(Floor* grid, vector< Link <Room> > edges);
+		vector< Link <Room> > GetHalls( Graph<Room> *g, vector< Edge<int> > e);
 		void FillMap(Floor* floor);
 	
 		Leaf* left;

@@ -518,10 +518,8 @@ int Floor::GetAvgWallValue(int sx, int sy, int radius)
 
 void Floor::ConnectRooms(Room* A, Room* B, bool angular)
 {
-	cout<<"Bump";
 	int lowestD = (int) (pow((A->border[0].x - B->border[0].x), 2) +
 		(pow((A->border[0].y - B->border[0].y), 2)));
-	cout<<"Bump2";
 	
 	Tile bestTileA = Tile();
 	Tile bestTileB = Tile();

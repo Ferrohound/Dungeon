@@ -13,6 +13,7 @@
 
 using std::string;
 using std::vector;
+using std::cout;
 
 //adjacency list node
 struct AdjNode
@@ -49,11 +50,12 @@ struct Node
 {
     int dest;
     vector< Link <T> > edges;
-    T data;
+    T* data;
     
     //============================================================= TO DO
     friend bool operator== (const Node& n1, const Node& n2)
     {
+        cout<<"LORD... "<<n1.data<<" "<<n2.data<<std::endl;
         return (n1.data == n2.data);
     }
 };
@@ -69,6 +71,9 @@ struct Link
 
     friend bool operator== (const Link &L1, const Link &L2)
     {
+        //cout<<"HELLO? IS THIS THING ON?"<<std::endl;
+        bool out = (L1.from == L2.from && L1.to == L2.to);
+        cout<<out; 
         return (L1.from == L2.from && L1.to == L2.to);
     }
 
@@ -99,44 +104,79 @@ class Graph
             l.to = b;
             l.weight = weight;
 
-            typename std::vector< Link<T> >::iterator it;
+            //=================================================== TO DO
+            //get comparisons working, jeez..
+            /*typename std::vector< Link<T> >::iterator it;
             //it = std::find(A->edges.begin(), A->edges.end(), l);
             it = std::find(edges.begin(), edges.end(), l);
 
             //i simply do not understand why this doesn't work.
             //this would cut down on the time dramatically, but whatever i guess.
-            //if(it == A->edges.end())
-            if(it == edges.end())
+            //if(it != A->edges.end())
+            if(it != edges.end())
             {
                 return;
-            }
+            }*/
 
             A->edges.push_back(l);
             edges.push_back(l);
+            cout<<"EDGE ADDED."<<std::endl;
         }
 
         void AddEdge(Link<T> E)
         {
-            typename std::vector< Link<T> >::iterator it;
+            /*typename std::vector< Link<T> >::iterator it;
             it = std::find(edges.begin(), edges.end(), E);
 
-            if(it == edges.end())
+            //if the edge was found, return
+            if(it != edges.end())
             {
                 return;
-            }
+            }*/
 
             edges.push_back(E);
+            E.to->edges.push_back(E);
+            //cout<<"EDGE ADDED."<<std::endl;
+        }
+
+        void AddNode(T* data)
+        {
+            Node<T> *tmp = new Node<T>();
+            tmp->data = data;
+            nodes.push_back(tmp);
         }
 
         void AddNode(Node<T>* A)
         {
-            typename std::vector< Node<T>* >::iterator it;
+           /* typename std::vector< Node<T>* >::iterator it;
             it = std::find(nodes.begin(), nodes.end(), A);
 
-            if(it == nodes.end())
+            //if the node was found, return
+            if(it != nodes.end())
+            {
                 return;
+            }*/
+
+            /*cout<<"ADDING NODE WITH DATA "<<A->data<<std::endl;
+            cout<<"DATA ALREADY CONTAINED..."<<std::endl;
+            for(int i = 0; i < nodes.size(); i++)
+            {
+                cout<<nodes[i]->data<<std::endl;
+            }
+            cout<<std::endl;
+
+            for(int i = 0; i < nodes.size(); i++)
+            {
+                //if the node is present
+                if(*A == *(nodes[i]))
+                {
+                    cout<<"Nodes are equal!"<<std::endl;
+                    return;
+                }
+            }*/
 
             nodes.push_back(A);
+            //cout<<"NODE ADDED WITH DATA "<<A->data<<std::endl;
             size++;
         }
 
@@ -173,8 +213,8 @@ class Graph
         bool Connected(Node<T>* A, Node<T>* B)
         {
             std::queue< Node<T>* > Q;
-            typename std::map<T, bool> visited;
-            typename std::map<T, bool>::iterator it;
+            typename std::map<T*, bool> visited;
+            typename std::map<T*, bool>::iterator it;
 
             Node<T> *current;
             Q.push(A);
@@ -187,7 +227,7 @@ class Graph
 
                 visited[current->data] = true;
                 
-                if(current == B)
+                if(current->data == B->data)
                 {
                     return true;
                 }
@@ -219,9 +259,9 @@ class Graph
             return out;
         }
 
-        Node<T>* GetNode(T data)
+        Node<T>* GetNode(T* data)
         {
-            Node<T> tmp;
+           /* Node<T> tmp;
             tmp.data = data;
 
             typename std::vector< Node<T>* >::iterator it;
@@ -229,7 +269,23 @@ class Graph
 
             if(it == nodes.end())
                 return NULL;
-            return (*it);
+            return (*it);*/
+            //cout<<"LOOKING FOR "<<data<<std::endl;
+            for(int i = 0; i < nodes.size(); i++)
+            {
+                //cout<<nodes[i]->data<<std::endl;
+                if(nodes[i]->data == data)
+                {
+                    return nodes[i];
+                }
+            }
+
+            return NULL;
+        }
+
+        vector< Node<T>* > GetNodes()
+        {
+            return nodes;
         }
 
         vector< Link<T> > MST()
@@ -241,6 +297,9 @@ class Graph
                 if this edge connects two unconnected nodes, add it to the MST
 
             */
+
+           cout<<"CREATING MST OUT OF "<<edges.size()<<" EDGES."<<std::endl;
+
             vector< Link<T> > out;
             vector< Link<T> > tmp = edges;
             std::sort(tmp.begin(), tmp.end());
@@ -269,6 +328,11 @@ class Graph
         //function to save an ascii and coordinates of a tile in the room/hallway
         //use floodfill to get the tiles in the room and rebuild
         void Save(string path);
+
+        int Size()
+        {
+            return nodes.size();
+        }
 
     //================================members
 
