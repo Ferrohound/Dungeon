@@ -38,7 +38,7 @@ class Leaf
 	
 		Room* room;
 
-		static vector< Leaf* > leaves;
+		static vector< Leaf* > LeafNodes;
 		
 	private:
 		int x, y, width, height;

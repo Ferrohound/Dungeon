@@ -85,6 +85,10 @@ class Room{
 		int id;
 		bool mainRoom;
 		bool accessible;
+
+		//to stop me from going crazy..
+		//better struct later ============================ TO DO
+		int mX, mY;
 		
 	
 	private:

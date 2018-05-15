@@ -53,6 +53,11 @@ Room::Room(int x, int y, int width, int height, vector< vector<int> > map )
 			tiles.push_back(Tile(i, j));
 		}
 	}
+
+	mX = x + width/2;
+	mY = y + height/2;
+
+	//cout<<"Room midpoint is "<<mX<<" "<<mY<<std::endl;
 	
 	size = tiles.size();
 	connectedRooms.clear();
