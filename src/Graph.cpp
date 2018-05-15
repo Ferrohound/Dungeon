@@ -131,11 +131,73 @@ void Graph::Save(string path)
 
 }
 
+//BFS check if two nodes are connected
+template <class T>
+bool Graph::Connected(Node<T>* A, Node<T>* B)
+{
+    std::queue< Node<T>* > Q;
+    std::map<T, bool> visited;
+    std::map<T, bool>::iterator it;
+
+    Node<T> *current;
+    Q.push(A);
+
+    while(Q.size!=0)
+    {
+        current = Q.pop();
+        visited[current->data] = true;
+        
+        if(current == B)
+        {
+            return true;
+        }
+
+        //add unvisited nodes to the queue
+        for(int i = 0; i < current->edges.size(); i++)
+        {
+            //if the value isn't in there, then add it to the queue
+            it = visited.find(edges[i]->to.data);
+            if(it == visited.end())
+            {
+                Q.push(edges[i]->to);
+            }
+        }
+    }
+
+    return false;
+}
+
 //create a minimum spanning tree of this graph
 template <class T>
-Graph Graph::MST()
+vector< Link<T> > Graph::MST()
 {
+    //algorithm...
+    /*
+        sort edges by weight
+        while the list of edges isn't empty, remove an edge from the set
+        if this edge connects two unconnected nodes, add it to the MST
 
+    */
+    vector< Link<T> > out;
+    vector< Link<T> > tmp = edges;
+    std::sort(tmp.begin(), tmp.end());
+
+    std::queue< Link<T> > Q;
+
+    for(int i = 0; i < tmp.size(); i++)
+    {
+        Q.push(tmp[i]);
+    }
+
+    while(Q.size()!=0)
+    {
+        Link<T> l = Q.pop();
+        if(!Connected(l.to, l.from))
+        {
+            out.push_back(l);
+        }
+    }
+    return out;
 }
 
 

@@ -233,12 +233,18 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 
 	vector< Link<Room*> > halls = GetHalls(&G, edges); 
 
-
-
 	//=================================================================== TO DO
 	
 	//get MST; add some percentage of the remaining edges to the tree
+	vector< Link<Room*> > MST = G.MST();
+	vector< Link<Room*> > tmp = halls;
+	std::sort(tmp.begin(), tmp.end());
 	//say, the final tree must be at least 60% of the original
+	//randomize which links get re-added later..
+	while (float(MST.size())/float(halls.size()) < 0.6)
+	{
+		MST.push_back(tmp[MST.size()]);
+	}
 	
 	//====================================================================
 	

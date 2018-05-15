@@ -7,6 +7,9 @@
 #include <string>
 #include <iostream>
 #include <algorithm> /* for std::find, std::sort */
+#include <queue>          // std::queue
+//for MST
+#include <map>
 
 using std::string;
 using std::vector;
@@ -84,11 +87,14 @@ class Graph
         void AddNode(Node<T>* A);
         void RemoveNode(Node<T>* A);
         void RemoveEdge(Link<T> L);
+
+        //BFS check if two nodes are connected
+        bool Connected(Node<T>* A, Node<T>* B);
         
         Link<T>* PopEdge( Link<T> L);
         Node<T>* GetNode(T data);
 
-        Graph<T> MST();
+        vector< Link<T> > MST();
 
         //function to save an ascii and coordinates of a tile in the room/hallway
         //use floodfill to get the tiles in the room and rebuild
