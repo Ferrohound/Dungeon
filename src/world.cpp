@@ -747,7 +747,7 @@ vector<Tile> Floor::GetLine(Tile start, Tile end)
 			gradientAccumulation-=longest;
 		}
 	}
-	cout<<std::endl;
+	//cout<<std::endl;
 	return line;
 }
 
