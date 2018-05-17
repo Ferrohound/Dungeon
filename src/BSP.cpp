@@ -15,7 +15,7 @@ Leaf::Leaf(int X, int Y, int W, int H)
 	width = W;
 	height = H;
 	
-	debug = true;
+	debug = false;
 	
 	left = NULL;
 	right = NULL;
@@ -161,7 +161,7 @@ void Leaf::CreateRooms(Floor* grid)
 				//cout<<x<<" "<<y<<std::endl;
 
 				//if this room tile is within bounds, do the do
-				if(grid->InMapRange(x+1, y+j))
+				if(grid->InMapRange(x+i, y+j))
 					grid->_map[x + i][y + j] = 0;
 			}
 		}
@@ -220,7 +220,7 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	
 	root->CreateRooms(grid);
 	cout<<"Done Creating Rooms"<<std::endl;
-	cout<<(*grid);
+	//cout<<(*grid);
 	
 
 	cout<<"Triangulating...."<<std::endl;
@@ -275,6 +275,13 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 		count++;
 	}*/
 	cout<<"Done re-adding "<<count<<" links!"<<std::endl;
+
+	for(int i = 0; i < MST.size(); i++)
+	{
+		//cout<<MST[i].from<<" "<<MST[i].to<<std::endl;
+		cout<<"("<<MST[i].from->data->mX<<","<<MST[i].from->data->mY<<") to (";
+		cout<<MST[i].to->data->mX<<","<<MST[i].to->data->mY<<")"<<std::endl;
+	}
 	
 	//====================================================================
 	

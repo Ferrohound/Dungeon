@@ -42,7 +42,7 @@ class Leaf
 		
 	private:
 		int x, y, width, height;
-		int MINLEAFSIZE = 6;
+		int MINLEAFSIZE = 11;
 		bool debug;
 };
 

@@ -45,6 +45,7 @@ Room::Room(int x, int y, int width, int height, vector< vector<int> > map )
 {
 	tiles.clear();
 	
+	//something about tiles is getting corrupted, would be nice to not use pointers
 	//pushback tiles from that region
 	for(int i = x; i < x+width; i++)
 	{
@@ -548,7 +549,25 @@ void Floor::ConnectRooms(Room* A, Room* B, bool angular)
 	//create an angular, maybe even jagged connection
 	if(angular)
 	{
-		CreatePassage(A, B, bestTileA, bestTileB);
+		//CreatePassage(A, B, bestTileA, bestTileB);
+		Tile corner = Tile(/*bestTileA.x - */bestTileB.x, bestTileA.y/* - bestTileB.y*/);
+		vector<Tile> line1 = GetLine(bestTileA, corner);
+		vector<Tile> line2 = GetLine(corner, bestTileB);
+
+		for(int i = 0; i < line1.size(); i++)
+		{
+			//===================================== TO DO
+			DrawCircle(line1[i], 1);
+		}
+
+		for(int i = 0; i < line2.size(); i++)
+		{
+			//===================================== TO DO
+			DrawCircle(line2[i], 1);
+		}
+
+		Room::ConnectRooms(A, B);
+
 	}
 	//otherwise, follow gradient
 	else
@@ -668,7 +687,9 @@ void Floor::CreatePassage(Room* A, Room* B, Tile tA, Tile tB)
 	
 	for(int i = 0; i < line.size(); i++)
 	{
-		DrawCircle(line[i], 2);
+		//===================================== TO DO
+		//editing a bit..
+		DrawCircle(line[i], 1);
 	}
 }
 

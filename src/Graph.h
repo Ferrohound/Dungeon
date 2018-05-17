@@ -50,6 +50,8 @@ struct Node
 {
     int dest;
     vector< Link <T> > edges;
+    //secondary link array for MST generation
+    vector< Link<T> > MST_Edges;
     T* data;
     
     //============================================================= TO DO
@@ -72,9 +74,9 @@ struct Link
     friend bool operator== (const Link &L1, const Link &L2)
     {
         //cout<<"HELLO? IS THIS THING ON?"<<std::endl;
-        bool out = (L1.from == L2.from && L1.to == L2.to);
-        cout<<out; 
-        return (L1.from == L2.from && L1.to == L2.to);
+       /* bool out = (L1.from == L2.from && L1.to == L2.to);
+        cout<<out; */
+        return (L1.from->data == L2.from->data && L1.to->data == L2.to->data);
     }
 
     //for sorting
@@ -97,11 +99,11 @@ class Graph
             size = 0;
         }
 
-        void AddEdge(Node<T>* A, Node<T>* b, int weight = 1)
+        void AddEdge(Node<T>* A, Node<T>* B, int weight = 1)
         {
             Link<T> l = Link<T>();
             l.from = A;
-            l.to = b;
+            l.to = B;
             l.weight = weight;
 
             //=================================================== TO DO
@@ -118,7 +120,15 @@ class Graph
                 return;
             }*/
 
+            for(int i = 0; i < edges.size(); i++)
+            {
+                if(l == edges[i])
+                    return;
+            }
+
             A->edges.push_back(l);
+            B->edges.push_back(l);
+
             edges.push_back(l);
             cout<<"EDGE ADDED."<<std::endl;
         }
@@ -134,8 +144,15 @@ class Graph
                 return;
             }*/
 
+            for(int i = 0; i < edges.size(); i++)
+            {
+                if(E == edges[i])
+                    return;
+            }
+
             edges.push_back(E);
             E.to->edges.push_back(E);
+            E.from->edges.push_back(E);
             //cout<<"EDGE ADDED."<<std::endl;
         }
 
@@ -210,7 +227,7 @@ class Graph
         }
 
         //BFS check if two nodes are connected
-        bool Connected(Node<T>* A, Node<T>* B)
+        bool Connected(Node<T>* A, Node<T>* B, bool MSTE = false)
         {
             std::queue< Node<T>* > Q;
             typename std::map<T*, bool> visited;
@@ -233,13 +250,29 @@ class Graph
                 }
 
                 //add unvisited nodes to the queue
-                for(int i = 0; i < current->edges.size(); i++)
+                if(!MSTE)
                 {
-                    //if the value isn't in there, then add it to the queue
-                    it = visited.find(current->edges[i].to->data);
-                    if(it == visited.end())
+                    for(int i = 0; i < current->edges.size(); i++)
                     {
-                        Q.push(current->edges[i].to);
+                        //if the value isn't in there, then add it to the queue
+                        it = visited.find(current->edges[i].to->data);
+                        if(it == visited.end())
+                        {
+                            Q.push(current->edges[i].to);
+                        }
+                    }
+                }
+
+                else
+                {
+                    for(int i = 0; i < current->MST_Edges.size(); i++)
+                    {
+                        //if the value isn't in there, then add it to the queue
+                        it = visited.find(current->MST_Edges[i].to->data);
+                        if(it == visited.end())
+                        {
+                            Q.push(current->MST_Edges[i].to);
+                        }
                     }
                 }
             }
@@ -304,11 +337,20 @@ class Graph
             vector< Link<T> > tmp = edges;
             std::sort(tmp.begin(), tmp.end());
 
+            //need a fresh set of nodes to make this work..
+            //===================================================== TO DO
+
             std::queue< Link<T> > Q;
 
             for(int i = 0; i < tmp.size(); i++)
             {
                 Q.push(tmp[i]);
+            }
+
+            //clear out the MST edges
+            for(int i = 0; i < nodes.size(); i++)
+            {
+                nodes[i]->MST_Edges.clear();
             }
 
             while(Q.size()!=0)
@@ -317,9 +359,12 @@ class Graph
                 Link<T> l = Q.front();
                 Q.pop();
 
-                if(!Connected(l.to, l.from))
+                if(!Connected(l.to, l.from, true))
                 {
                     out.push_back(l);
+                    //add the edges to the MST_Edges vector
+                    l.to->MST_Edges.push_back(l);
+                    l.from->MST_Edges.push_back(l);
                 }
             }
             return out;
