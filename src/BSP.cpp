@@ -267,21 +267,21 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	//say, the final tree must be at least 60% of the original
 	//randomize which links get re-added later..
 	int count = 0;
-
-	cout<<"Re-adding links..."<<std::endl;
-	/*while (float(MST.size())/float(halls.size()) < 0.6)
+	while (float(MST.size())/float(halls.size()) < 0.45)
 	{
+		cout<<"Re-adding links..."<<std::endl;
 		MST.push_back(tmp[MST.size()]);
 		count++;
-	}*/
+	}
+
 	cout<<"Done re-adding "<<count<<" links!"<<std::endl;
 
-	for(int i = 0; i < MST.size(); i++)
+	/*for(int i = 0; i < MST.size(); i++)
 	{
 		//cout<<MST[i].from<<" "<<MST[i].to<<std::endl;
 		cout<<"("<<MST[i].from->data->mX<<","<<MST[i].from->data->mY<<") to (";
 		cout<<MST[i].to->data->mX<<","<<MST[i].to->data->mY<<")"<<std::endl;
-	}
+	}*/
 	
 	//====================================================================
 	
@@ -334,6 +334,8 @@ vector< Link <Room> > Leaf::GetHalls(Graph<Room> *g,  vector< Edge<int> > e )
 			//cout<<"oh cmon..."<<std::endl;
 			continue;
 		}
+		
+		L.weight = std::sqrt(std::pow((N1->data->mX - N2->data->mX),2)+std::pow((N1->data->mY - N2->data->mY), 2));
 		out.push_back(L);
 		g->AddEdge(L);
 	}

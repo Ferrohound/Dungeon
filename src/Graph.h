@@ -57,7 +57,7 @@ struct Node
     //============================================================= TO DO
     friend bool operator== (const Node& n1, const Node& n2)
     {
-        cout<<"LORD... "<<n1.data<<" "<<n2.data<<std::endl;
+        //cout<<"LORD... "<<n1.data<<" "<<n2.data<<std::endl;
         return (n1.data == n2.data);
     }
 };
@@ -106,6 +106,11 @@ class Graph
             l.to = B;
             l.weight = weight;
 
+            Link<T> l2 = Link<T>();
+            l2.from = B;
+            l2.to = A;
+            l2.weight = weight;
+
             //=================================================== TO DO
             //get comparisons working, jeez..
             /*typename std::vector< Link<T> >::iterator it;
@@ -122,14 +127,16 @@ class Graph
 
             for(int i = 0; i < edges.size(); i++)
             {
-                if(l == edges[i])
+                if(l == edges[i] || l2 == edges[i])
                     return;
             }
 
             A->edges.push_back(l);
-            B->edges.push_back(l);
+            B->edges.push_back(l2);
 
             edges.push_back(l);
+            edges.push_back(l2);
+
             cout<<"EDGE ADDED."<<std::endl;
         }
 
@@ -144,15 +151,21 @@ class Graph
                 return;
             }*/
 
+            //bi-directional for now
+            Link<T> l2 = Link<T>();
+            l2.from = E.to;
+            l2.to = E.from;
+            l2.weight = E.weight;
+
             for(int i = 0; i < edges.size(); i++)
             {
-                if(E == edges[i])
+                if(E == edges[i] || l2 == edges[i])
                     return;
             }
 
             edges.push_back(E);
             E.to->edges.push_back(E);
-            E.from->edges.push_back(E);
+            E.from->edges.push_back(l2);
             //cout<<"EDGE ADDED."<<std::endl;
         }
 
@@ -244,7 +257,7 @@ class Graph
 
                 visited[current->data] = true;
                 
-                if(current->data == B->data)
+                if(*B == *current)
                 {
                     return true;
                 }
@@ -272,6 +285,11 @@ class Graph
                         if(it == visited.end())
                         {
                             Q.push(current->MST_Edges[i].to);
+                        }
+                        it = visited.find(current->MST_Edges[i].from->data);
+                        if(it == visited.end())
+                        {
+                            Q.push(current->MST_Edges[i].from);
                         }
                     }
                 }
@@ -359,13 +377,18 @@ class Graph
                 Link<T> l = Q.front();
                 Q.pop();
 
-                if(!Connected(l.to, l.from, true))
+                if(!Connected(l.to, l.from, true) && !Connected(l.to, l.from, true))
                 {
                     out.push_back(l);
                     //add the edges to the MST_Edges vector
                     l.to->MST_Edges.push_back(l);
                     l.from->MST_Edges.push_back(l);
+                    //cout<<"Added Edge"<<std::endl;
                 }
+                /*else
+                {
+                   // cout<<"Dropped Edge"<<std::endl;
+                }*/
             }
             return out;
         }

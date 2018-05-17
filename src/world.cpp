@@ -517,7 +517,7 @@ int Floor::GetAvgWallValue(int sx, int sy, int radius)
 	return avg;
 }
 
-void Floor::ConnectRooms(Room* A, Room* B, bool angular)
+void Floor::ConnectRooms(Room* A, Room* B, bool angular, int fill)
 {
 	int lowestD = (int) (pow((A->border[0].x - B->border[0].x), 2) +
 		(pow((A->border[0].y - B->border[0].y), 2)));
@@ -557,13 +557,13 @@ void Floor::ConnectRooms(Room* A, Room* B, bool angular)
 		for(int i = 0; i < line1.size(); i++)
 		{
 			//===================================== TO DO
-			DrawCircle(line1[i], 1);
+			DrawCircle(line1[i], 1, fill);
 		}
 
 		for(int i = 0; i < line2.size(); i++)
 		{
 			//===================================== TO DO
-			DrawCircle(line2[i], 1);
+			DrawCircle(line2[i], 1, fill);
 		}
 
 		Room::ConnectRooms(A, B);
@@ -678,7 +678,7 @@ void Floor::ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility)
 	//cout<<"Done Connecting Rooms"<<std::endl;
 }
 
-void Floor::CreatePassage(Room* A, Room* B, Tile tA, Tile tB)
+void Floor::CreatePassage(Room* A, Room* B, Tile tA, Tile tB, int fill)
 {
 	//cout<<"Creating Passage"<<std::endl;
 	Room::ConnectRooms(A, B);
@@ -689,7 +689,7 @@ void Floor::CreatePassage(Room* A, Room* B, Tile tA, Tile tB)
 	{
 		//===================================== TO DO
 		//editing a bit..
-		DrawCircle(line[i], 1);
+		DrawCircle(line[i], 1, fill);
 	}
 }
 
@@ -751,7 +751,7 @@ vector<Tile> Floor::GetLine(Tile start, Tile end)
 	return line;
 }
 
-void Floor::DrawCircle(Tile t, int r)
+void Floor::DrawCircle(Tile t, int r, int fill)
 {
 	//cout<<"Drawing circle at point "<<t.x<<" "<<t.y<<" "<<"with radius "<<r<<std::endl;
 	for(int x = -r; x <=r ; x++)
@@ -765,10 +765,10 @@ void Floor::DrawCircle(Tile t, int r)
 				
 				if(InMapRange(mapX, mapY))
 				{
-					if (debug)
-						_map[mapX][mapY] = 2;
-					else
-						_map[mapX][mapY] = 1;
+					//if (debug)
+					//	_map[mapX][mapY] = fill;
+					//else
+						_map[mapX][mapY] = fill;
 				}
 			}
 		}
