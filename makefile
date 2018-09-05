@@ -12,9 +12,9 @@ INCLUDES = -I/include
 LIBS = -L
 EXT ?= .exe
 
-PLATFORM ?= PLATFORM_WINDOWS
+PLATFORM ?= linux
 
-ifeq ($(PLATFORM), PLATFORM_WINDOWS)
+ifeq ($(PLATFORM), windows)
 	EXT = .exe
 endif
 
@@ -29,8 +29,7 @@ default: main
 
 # compile program
 main: main.cpp $(OBJS)
-	$(CC) -o /build/$@$(EXT) $^ $(CFLAGS) $(INCLUDES) $(CFLAGS) $(LIBS)
-
+	$(CC) -o /bin/$@$(EXT) $^ $(CFLAGS) $(INCLUDES) $(CFLAGS) $(LIBS)
 	
 # Compile source files
 # NOTE: This pattern will compile every module defined on $(OBJS)
