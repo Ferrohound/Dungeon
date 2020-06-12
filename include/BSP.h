@@ -6,13 +6,11 @@
 
 #include <vector>
 
-#include "world.h"
+#include "floor.h"
 #include "Graph.h"
 
 //for triangulation, move this elsewhere when the time comes
-#include "vector2.h"
-#include "triangle.h"
-#include "delaunay.h"
+#include "vec.h"
 
 using std::vector;
 
@@ -22,16 +20,15 @@ class Leaf
 {
 	public:
 		Leaf(int X, int Y, int W, int H);
-		bool Split(Floor* grid);
-		void CreateRooms(Floor* grid);
-		void Generate(Floor* grid, int minSize, int maxSize);
-		
-		//have a graph struct; create a MST from these edges & re-add some edges 
-		//based on some heuristic
-		vector< Edge<int> > TriangulateEdges(Leaf* head);
+		bool Split(Floor* grid, bool debug = false);
+		void CreateRooms(Floor* grid, bool debug = false);
+		static Leaf* Generate(Floor* grid, int minSize, int maxSize, bool debug = false);
+
 		void DrawHallways(Floor* grid, vector< Link <Room> > edges);
+
 		vector< Link <Room> > GetHalls( Graph<Room> *g, vector< Edge<int> > e);
-		void FillMap(Floor* floor);
+		vector< Room* > GetRooms(Leaf* head);
+		void ConnectRooms(Floor* grid, vector< Room* > rooms);
 	
 		Leaf* left;
 		Leaf* right;
@@ -39,11 +36,10 @@ class Leaf
 		Room* room;
 
 		static vector< Leaf* > LeafNodes;
+		static int MINLEAFSIZE;
 		
 	private:
 		int x, y, width, height;
-		int MINLEAFSIZE = 11;
-		bool debug;
 };
 
 

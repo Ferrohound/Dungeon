@@ -13,8 +13,7 @@
 	
 	Author: Ferrohound
 */
-#if !defined(WORLD_H)
-#define WORLD_H
+#pragma once
 
 #include <string.h>
 #include <string>
@@ -24,12 +23,16 @@
 #include <fstream>
 #include <vector>
 #include <queue>
+#include <unordered_map>
 
 #include <cmath>
 #include <algorithm> /*std::find(vector.begin(), vector.end(), item)!=vector.end())*/
 
 #include <time.h>
 //#include <utility> /*std::pair, std::make_pair */
+
+#include "Graph.h"
+#include "vec.h"
 
 using std::cout;
 using std::cin;
@@ -56,9 +59,15 @@ struct Tile{
 	int x, y;
 };
 
+class Region{
+	public:
+
+	protected:
+};
+
 //============================ROOM============================================
 //rename to region?
-
+//eventually implement different shapes
 class Room{
 	public:
 		Room();
@@ -95,6 +104,58 @@ class Room{
 		
 };
 
+//=================================================================================
+class Floor;
+
+class RoomNode
+{
+	public:
+		RoomNode(int x, int y, float size = 1) 
+		{ _pos.x = x; _pos.y = y; _size = size; }
+
+		float GetSize() { return _size; }
+		vec2 GetPosition() { return _pos; }
+		void SetPosition(vec2 newpos) { _pos = newpos; }
+
+		Room* GetRoom() {return _r;}
+		void SetRoom(Room* r) { _r = r; }
+	private:
+		float _size;
+		vec2 _pos;
+		Room* _r;
+};
+
+class RoomSystem
+{
+	public:
+		RoomSystem() {}
+		
+		//eventually have it so ideal numRooms is calculated itself
+		void Generate(Floor* grid, int fill = 10, bool dense = false, int minS = -1, int maxS = -1, int numSteps = 4);
+
+		void PopulateSystem(int minSize, int maxSize, int dimX, int dimY, int maxFill);
+		
+		void Tick();
+		std::vector<RoomNode*> GetSurroundingNodes(RoomNode* R, int distance, std::vector<RoomNode*> s);
+		void AdjustNode(RoomNode* node, std::vector<RoomNode*> surrounding);
+		void CalculateCoM(int& x, int& y);
+
+		//connect the rooms in MST fashion, then create cycles to make
+		//the room more interesting
+		Graph<RoomNode> ConnectSystem();
+		void AddCycles(Graph<RoomNode>& MST);
+		void AddDenseCycles(Graph<RoomNode>& MST);
+
+		//function to add all of the edges to the map
+		void AddEdgesToFloor(Floor* grid, vector< Edge<RoomNode> >& edges);
+		void AddRoomToFloor(Floor* grid, RoomNode* room);
+
+	private:
+		std::vector<RoomNode*> nodes;
+		vec2 bounds;
+		int cmX, cmY;
+};
+
 //============================FLOOR============================================
 //each floor takes care of its own data, the world contains pointers to each floor
 //and probably whatever enemies exist on it to keep consistency
@@ -124,6 +185,7 @@ class Floor{
 		//modify rooms to make them more mountainous, etc..
 		void ProcessRooms(int max = 1, int min = 1, int smoothing = 1);
 		void SmoothRoom(Room* room);
+		void AddRoom(Room* room);
 		
 		void ConnectClosestRooms(vector<Room*> rooms, bool forceAccessibility = false);
 		void ConnectRooms(Room* A, Room* B, bool angular = false, int fill = 2);
@@ -168,30 +230,3 @@ class Floor{
 	private:
 		int _width, _height;
 };
-
-//========================World=================================================
-//contains the floors, total number of enemies(?), difficulty, etc...
-/*class World{
-	public:
-		World(const string& name = "Earth", int floors=5, int difficulty = 1);
-		~World();
-		//method to delete each floor, free up memory
-		void clear();
-		void print();
-		void update();
-		void move();
-		
-		Floor* getFloor(int index);
-	
-	private:
-		string _name;
-		int _floors, _difficulty, _current;
-		Floor ** _data;
-		
-		//method to generate however many floors are required
-		void generate();
-};*/
-
-
-#endif
-

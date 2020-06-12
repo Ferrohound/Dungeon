@@ -1,0 +1,93 @@
+                                 xxxxxx
+                                 x....x
+                                 x....x
+                                 x....x
+       xxxxxxxxxxxxxxxxxxxxxxxxxx......xxxxx
+      x.....................................xxxxxxx
+      x..xxxx.....................................x
+      x.x    x......xxxxxxxxxxxx...xxxxxxxxx......x
+      x.x    x.....x            x.x         x.....x
+      x.x    x.....x            x.x         x.....x
+      x..xxxx.......xxxxxxxxxxxx...xxxxxxxxx......x
+      x.......................................xxxxx
+      x..xxx....xxxx...........x...x...xxxx..x
+      x.x   x..x    xxxxxxxx..x x.x x.x    x.x
+      x.x   x..x            x.x x.x x.x    x.x
+      x.x   x..x            x.x x.x x.x    x.x
+      x.x   x..x            x.x x.x x.x    x.x
+      x.x   x..x            x..x...x..x    x.x
+      x.x   x..x            x.........x    x.x
+      x.x   x..x            x.........x    x.x
+      x.x   x..x            x.........x    x.x
+      x.x   x..x            x.........x    x.x
+      x.x   x..x            x.........x    x.x
+      x.x   x..x            x.........x    x.x
+      x.x   x..x            x.........x    x.x
+      x.x   x..x            x..x...x..x    x.x
+      x.x   x..x            x.x x.x x.x    x.x
+      x.x   x..x            x..x...x..x    x.x
+      x..xxx....xxxxxxxxxxxx...........xxxx..x
+  xxxx.......................................x
+  x.....xxxx.......xxxxxxxxx..........xxxxxxx
+  x....x    x.....x         x........x
+  x....x    x.....x         x........x
+  x....x    x...xxx         x........x
+  xxxx..x   x..x            x........x
+      x.x   x..x            x..x...xxx
+      x.x   x..x            x.x x.x
+      x.x   x..x            x.x x.x
+      x..x  x...xxxxxxxxxxxx...x..x
+      x...xx......................x
+       xxx.....xxxxxxxxxxxxxxxxxxx
+          x...x
+          x...x
+          xxxxx
+
+
+
+                                      xxxxxxxxx
+                                      x.......x
+                                      x.......x
+                                      x.......x
+                                      x.......x
+                                      x.......x
+                                      x.......x
+                              xxxxxxxx.........xxxx
+                             x.............xxxx....x
+                             x..xxxxx.....x    xx..x
+                             x.x     x....x      x.x
+                             x.x     x....x      x.x
+                             x.x     x....x      x..xxxxxxx
+                             x.x     x....x       x.......x
+          xxxxxxxxxxxxxxxxxxx...xxxxx......xxxxxxx........x
+  xxxxxxxx................................................x
+  x........................................xxxx...........x
+  x.......................................x    x..........x
+  x........................................xxxx...........x
+  x........xxxxxxxxxxxxxxxxx..............................x
+  x.......x                 x.......................xxxxxxx
+  x.......x            xxxxx...................xx..x
+  x........xxxxxxxxxxxx.......................x  x.x
+  xxx...xxx................................xxxx  x.x
+     x.x   xxxxxxxx.......................x      x.x
+     x.x           x.......................xxxxxx..x
+     x.x           x...............................x
+     x.x            x...............x......xxxxxx..x
+     x.x            x..............x x....x      x.x
+     x.x           x...............x x....x      x.x
+     x.x           x....xxx.....x..x x.....xxxxxx..x
+     x.x           x...x   x...x x..x..............x
+     x.x           x...x   x...x  x........xxxxxx..x
+     x.x           x...x   x...x  x.......x      x.x
+     x.x           x...x   x...x  x.......x      x.x
+     x.x           x...x   x....xx........x      x.x
+     x.x           x....xxx.........x.....x      x.x
+     x.x           x...............x x....x      x.x
+     x.x     xxxxxx.................x......xxxxxx..x
+      x.xxxxx......................................x
+      x......xxxxxxxxx.........xxxxxxxxxxxxxxxxxxxx
+      x.....x         x.......x
+      x.....x         x.......x
+      x.....x         x.......x
+      x.....x         xxxxxxxxx
+      xxxxxxx

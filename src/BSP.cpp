@@ -1,7 +1,37 @@
 #include "BSP.h"
 
+/*
+vector< Vector2<int> > GetMidpoints(vector< Room* > rooms)
+{
+	//rooms created with the Leaf class will have the upper left tile as the first
+	//and lower right as the last
+	
+	vector< Vector2<int> > out;
+	for(int i = 0; i < rooms.size(); i++)
+	{
+		//out.push_back(Vector2<int>(midX, midY));
+		out.push_back(Vector2<int>(rooms[i]->mX, rooms[i]->mY));
+	}
+	return out;
+}
+
+//to save myself some trouble
+vector <Vector2<int> > GetMidpoints(vector< Leaf* > leaves)
+{
+	vector<Room*> tmp = vector<Room*>();
+
+	for(int i = 0; i < leaves.size(); i++)
+	{
+		tmp.push_back(leaves[i]->room);
+	}
+
+	return GetMidpoints(tmp);
+}
+*/
+
 //initialize room vector, probably not doing this right..
 vector<Leaf*> Leaf::LeafNodes = vector<Leaf*>();
+int Leaf::MINLEAFSIZE = 11;
 
 Leaf::Leaf(int X, int Y, int W, int H)
 {
@@ -15,14 +45,12 @@ Leaf::Leaf(int X, int Y, int W, int H)
 	width = W;
 	height = H;
 	
-	debug = false;
-	
 	left = NULL;
 	right = NULL;
 }
 
 
-bool Leaf::Split(Floor* grid)
+bool Leaf::Split(Floor* grid, bool debug)
 {
 	//cout<<"Splitting.."<<std::endl;
 	int seed = time(NULL);
@@ -39,9 +67,6 @@ bool Leaf::Split(Floor* grid)
 	// if the width is >25% larger than height, we split vertically
     // if the height is >25% larger than the width, we split horizontally
     // otherwise we split randomly
-	
-	//cout<<float(width)/float(height)<<std::endl;
-	//cout<<float(height)/float(width)<<std::endl;
 	
 	if(width > height && float(width)/float(height) >= 1.25)
 	{
@@ -100,9 +125,6 @@ bool Leaf::Split(Floor* grid)
 		}
 	}
 	
-	//cout<<(*grid);
-	//this is a leaf node
-	
 	//LeafNodes.push_back(this);
 	
 	//cout<<"Successfully split"<<std::endl;
@@ -110,23 +132,22 @@ bool Leaf::Split(Floor* grid)
 }
 
 //recursive function to create the rooms
-void Leaf::CreateRooms(Floor* grid)
+void Leaf::CreateRooms(Floor* grid, bool debug)
 {
-	//cout<<"Creating Rooms..."<<std::endl;
-	
-	//not at the root room yet, go deeper
-	//maybe add a list of leaf notdes so we know which leaves are the rooms without having to create this list
-	//later
+	if (debug) std::cout<< "Creating room..." <<std::endl;
+	//not at a leaf room yet, go deeper
 	if( left!=NULL || right!=NULL)
 	{
+		if ( debug ) std::cout << "not at a leaf room yet, go deeper" <<std::endl;
+
 		if(left!=NULL)
 		{
-			left->CreateRooms(grid);
+			left->CreateRooms(grid, debug);
 		}
 		
 		if(right!=NULL)
 		{
-			right->CreateRooms(grid);
+			right->CreateRooms(grid, debug);
 		}
 	}
 	//leaf is ready to make a room
@@ -139,15 +160,22 @@ void Leaf::CreateRooms(Floor* grid)
 		
 		int seed = time(NULL);
 		srand(seed);
+
+		if (debug) std::cout<< "Generating room sizes for "
+			<< "Width : " << width 
+			<< " Height: " << height <<std::endl;
 		
-		int roomSizeX = rand() % (width-4) + 3; //(Registry.randomNumber(3, width - 2), Registry.random
-		int roomSizeY = rand() % (height-4) + 3;
+		int roomSizeX = rand() % (width - MINLEAFSIZE + 1) + 3; //(Registry.randomNumber(3, width - 2), Registry.random
+		int roomSizeY = rand() % (height - MINLEAFSIZE + 1) + 3;
+
+		if (debug) std::cout << "Room Size X: " << roomSizeX
+			<< " Room Size Y: " << roomSizeY <<std::endl; 
+
 		/*
 		// place the room within the Leaf, but don't put it right 
 		// against the side of the Leaf (that would merge rooms together)
 		roomPos = new Point(Registry.randomNumber(1, width - roomSize.x - 1), Registry.randomNumber(1, height - roomSize.y - 1));
 		room = new Rectangle(x + roomPos.x, y + roomPos.y, roomSize.x, roomSize
-		
 		*/
 		
 		int xPos = rand() % (width - roomSizeX - 1) + 1;
@@ -168,19 +196,16 @@ void Leaf::CreateRooms(Floor* grid)
 		
 		room = new Room(x + xPos, y + yPos, roomSizeX, roomSizeY, grid->_map);
 		grid->_rooms.push_back(room);
-		
-		//cout<<(*grid);
-		
 	}
 }
 
 //call from head
-void Leaf::Generate(Floor* grid, int minSize, int maxSize)
+Leaf* Leaf::Generate(Floor* grid, int minSize, int maxSize, bool debug)
 {
 	if(minSize < 2)
 	{
 		cout<<"Min size too small."<<std::endl;
-		return;
+		return NULL;
 	}
 	int MAXLEAFSIZE = maxSize;
 	MINLEAFSIZE = minSize;
@@ -191,6 +216,7 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	leaves.push_back(root);
 	bool split = true;
 	
+	//split the place up
 	while(split)
 	{
 		if(debug)
@@ -203,7 +229,7 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 			{
 				if(leaves[i]->width > MAXLEAFSIZE || leaves[i]->height > MAXLEAFSIZE)
 				{
-					if(leaves[i]->Split(grid))
+					if(leaves[i]->Split(grid, debug))
 					{
 						leaves.push_back(leaves[i]->right);
 						leaves.push_back(leaves[i]->left);
@@ -216,18 +242,10 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 	
 	if(debug) cout<<"Done splitting loop!"<<std::endl;
 	
-	/*if(debug)
-		cout<<(*grid);*/
+	if(debug) cout<<(*grid);
 	
-	root->CreateRooms(grid);
+	root->CreateRooms(grid, debug);
 	if(debug) cout<<"Done Creating Rooms"<<std::endl;
-	//cout<<(*grid);
-	
-
-	if(debug)	cout<<"Triangulating...."<<std::endl;
-	//get the edges and make that sweet sweet graph
-	vector< Edge<int> > edges = TriangulateEdges(root);
-	if(debug)	cout<<"Done Triangulating, have "<<edges.size()<<" edges"<<std::endl;
 
 	if(debug)	cout<<"Populating Graph..."<<std::endl;
 	//================================================================== TO DO
@@ -239,109 +257,31 @@ void Leaf::Generate(Floor* grid, int minSize, int maxSize)
 		//cout<<"?? "<<LeafNodes[j]->room<<std::endl;
 		Node<Room> n = Node<Room>();
 		n.data = LeafNodes[j]->room;
-		//cout<<"!! "<<n.data<<std::endl;
-		//G.AddNode(&n);
 		G.AddNode(LeafNodes[j]->room);
 	}
 
-	if(debug)	cout<<"Done populating graph with "<< G.Size() <<" nodes!"<<std::endl;
+	ConnectRooms(grid, GetRooms(this) );
 
-	/*vector< Node<Room>* > fuckOff = G.GetNodes();
-	for(int j = 0; j < fuckOff.size(); j++)
-	{
-		cout<<"SHIT "<<fuckOff[j]->data<<std::endl;
-	}*/
-
-	if(debug)	cout<<"Creating links..."<<std::endl;
-	vector< Link<Room> > halls = GetHalls(&G, edges); 
-	if(debug)	cout<<"Done creating "<<halls.size()<<" links!"<<std::endl;
-
-	//=================================================================== TO DO
-	
-	//get MST; add some percentage of the remaining edges to the tree
-	if(debug)	cout<<"Generating Minimum Spanning Tree..."<<std::endl;
-	vector< Link<Room> > MST = G.MST();
-	if(debug)	cout<<"Done Generating sized "<<MST.size()<<" Tree."<<std::endl;
-
-	vector< Link<Room> > tmp = halls;
-	std::sort(tmp.begin(), tmp.end());
-	//say, the final tree must be at least 60% of the original
-	//randomize which links get re-added later..
-	int count = 0;
-	while (float(MST.size())/float(halls.size()) < 0.45)
-	{
-		if(debug)	cout<<"Re-adding links..."<<std::endl;
-		MST.push_back(tmp[MST.size()]);
-		count++;
-	}
-
-	if(debug)	cout<<"Done re-adding "<<count<<" links!"<<std::endl;
-
-	/*for(int i = 0; i < MST.size(); i++)
-	{
-		//cout<<MST[i].from<<" "<<MST[i].to<<std::endl;
-		cout<<"("<<MST[i].from->data->mX<<","<<MST[i].from->data->mY<<") to (";
-		cout<<MST[i].to->data->mX<<","<<MST[i].to->data->mY<<")"<<std::endl;
-	}*/
-	
-	//====================================================================
-	
-	//pass the edges in the graph to ConnectRooms to draw the paths
-	if(debug)	cout<<"Drawing hallways..."<<std::endl;
-	DrawHallways(grid, MST);
-	if(debug)	cout<<"Done Drawing hallways!"<<std::endl;
-	
+	return root;
 }
 
-//===================================================== TO DO
-//improve this, for this shall be awful
-//perhaps aim to populate the graph as you go along to save on time
-vector< Link <Room> > Leaf::GetHalls(Graph<Room> *g,  vector< Edge<int> > e )
+void Leaf::ConnectRooms(Floor* grid, vector< Room* > rooms)
 {
-	vector< Link<Room> > out;
+	// put every room in queue of unreachable rooms;
+	// while this queue is not empty:
+		// get next room from queue;
+		// if room is touching any number of halls:
+			// make door, facing any avaliable hall;
+			// put this room in queue of reachable rooms;
+				// `continue`;
+			// if room is touching any other reachable room:
+				// connect this with other;
+				// place door, if Random wants so;
+				// `continue`;
+			// put this room in queue of unreachable rooms;
 
-	for(int i = 0; i < e.size(); i++)
-	{
-		Room *R1, *R2;
-		Node<Room> *N1, *N2;
-		//need to have the nodes from the graph as well
-		for(int j = 0; j < LeafNodes.size(); j++)
-		{
-			//int midX = (leaves[j]->room->tiles[0].x + leaves[j]->room->tiles[leaves[j]->room->tiles.size()-1].x)/2;
-			//int midY = (leaves[j]->room->tiles[0].y + leaves[j]->room->tiles[leaves[j]->room->tiles.size()-1].y)/2;
-			int midX = LeafNodes[j]->room->mX;
-			int midY = LeafNodes[j]->room->mY;
-
-			if(e[i].p1.x == midX && e[i].p1.y == midY)
-			{
-				R1 = LeafNodes[j]->room;
-				N1 = g->GetNode(R1);
-
-				//find the corresponding node from the graph
-			}
-
-			if(e[i].p2.x == midX && e[i].p2.y == midY)
-			{
-				R2 = LeafNodes[j]->room;
-				N2 = g->GetNode(R2);
-			}
-		}
-
-		Link<Room> L = Link<Room>();
-		L.to = N1;
-		L.from = N2;
-		if(N1 == NULL || N2 == NULL)
-		{
-			//cout<<"oh cmon..."<<std::endl;
-			continue;
-		}
-		
-		L.weight = std::sqrt(std::pow((N1->data->mX - N2->data->mX),2)+std::pow((N1->data->mY - N2->data->mY), 2));
-		out.push_back(L);
-		g->AddEdge(L);
-	}
-
-	return out;
+	std::queue< Room* > UR; //unreachable rooms
+	std::vector< Room* > RR; //reachable rooms
 }
 
 //draw halls from the given edges
@@ -380,80 +320,4 @@ vector< Room* > GetRooms(Leaf* head)
 	
 	return out;
 }
-
-vector< Vector2<int> > GetMidpoints(vector< Room* > rooms)
-{
-	//rooms created with the Leaf class will have the upper left tile as the first
-	//and lower right as the last
-	
-	vector< Vector2<int> > out;
-	//cout<<"Prepping midpoing vector for "<<rooms.size()<<" rooms.."<<std::endl;
-	for(int i = 0; i < rooms.size(); i++)
-	{
-		//cout<<rooms[i]->tiles.size()<<std::endl;
-
-		/*cout<<rooms[i]->tiles[0].x<<" "<<rooms[i]->tiles[0].y<<std::endl;
-		cout<<rooms[i]->tiles[rooms[i]->tiles.size()-1].x<<" "<<rooms[rooms[i]->tiles.size()-1]->tiles[0].y<<std::endl;
-
-		int midX = (rooms[i]->tiles[0].x + rooms[i]->tiles[rooms[i]->tiles.size()-1].x)/2;
-		int midY = (rooms[i]->tiles[0].y + rooms[i]->tiles[rooms[i]->tiles.size()-1].y)/2;*/
-		
-		//out.push_back(Vector2<int>(midX, midY));
-		out.push_back(Vector2<int>(rooms[i]->mX, rooms[i]->mY));
-	}
-	//cout<<"Returning midpoint vector"<<std::endl;
-	return out;
-}
-
-//to save myself some trouble
-vector <Vector2<int> > GetMidpoints(vector< Leaf* > leaves)
-{
-	vector<Room*> tmp = vector<Room*>();
-
-	for(int i = 0; i < leaves.size(); i++)
-	{
-		tmp.push_back(leaves[i]->room);
-	}
-
-	return GetMidpoints(tmp);
-}
-
-
-
-vector< Edge<int> > Leaf::TriangulateEdges(Leaf* head)
-{
-	//================================================================== TO DO 
-	/*
-	
-		function for getting all the rooms in a particular sector may
-		be more useful in the long run
-	
-	*/
-	//====================================================================
-	
-	//get the midpoints from all of the rooms from function
-	if(debug)	cout<<"Getting midpoints.."<<std::endl;
-	std::vector<Vector2<int>> points = GetMidpoints(LeafNodes);
-	if(debug)	cout<<"Done getting midpoints!"<<std::endl;
-
-	Delaunay<int> triangulation;
-	
-	triangulation.triangulate(points);
-	return triangulation.getEdges();
-}
-
-//fill map with 1s then iterate over each room & fill them up with 0s
-//then create the halls and stuff
-void Leaf::FillMap(Floor* floor)
-{
-	//getRooms
-	//getEdges
-	
-	vector< Edge<int> > edges;
-	//need a way to translate those edges to rooms?
-	//maybe, maybe not.. just do a check to see if the current tile is 1
-	//or not
-	
-}
-
 

@@ -11,8 +11,8 @@ Author: Ferrohound
 #include <ctime>
 #include <fstream>
 
-#include"world.h"
-#include "BSP.h"
+#include "floor.h"
+#include "argParser.h"
 
 using std::cout;
 using std::cin;
@@ -20,16 +20,11 @@ using std::endl;
 
 #define offset "		"
 
-//don't forget to pass by reference, not value~!
-//use a hash table to store the ascii letters
-//give each character/monster ascii art too
-
 //maybe have an outline of some sort
 void DrawStyleMap(Floor* t)
 {
 	for(int i = 0 ; i < t->_map.size(); i++)
 	{
-		//cout<<i<<" "<<test->_map[i].size()<<std::endl;
 		for(int j = 0 ; j < t->_map[i].size(); j++)
 		{
 			if((t->_map[i][j] == 0 || t->_map[i][j] == 2))
@@ -40,7 +35,6 @@ void DrawStyleMap(Floor* t)
 			{
 				cout<<" ";
 			}
-			//cout<<t->_map[i][j];
 		}
 		cout<<std::endl;
 	}
@@ -77,80 +71,138 @@ void DrawOutline(Floor* t)
 	
 }
 
-int main(int argx, char*argv[]){
-	
-	//Engine* engine = new Engine();
+int main(int argx, char*argv[])
+{
 
-	//engine->run(0);
-	
-	//delete engine;
-	Floor* test = new Floor(60, 50, 50, true);
-	
-	//organic dungeon
-	if(argx == 1 )
-	{
-		
-		cout<<(*test)<<std::endl;
-		
-		int x;
-		cout<<"0. Generate New Map\n1. Save map\n2. Load Map\n3. StyleMap";
-			cout<<"\n4. OutlineMap\n5. Process\n-1. Quit\n\n";
-		cin >> x;
-		
-		while(x!=-1)
-		{
-			switch(x)
-			{
-				case 0:
-					test->Generate(50, true, 0, 5);
-					cout<<(*test)<<std::endl;
-				break;
-				
-				case 1:
-					test->SaveFloor("test.txt");
-				break;
-				
-				case 2:
-					test->LoadFloor("test.txt");
-					cout<<(*test)<<std::endl;
-				break;
-				
-				case 3:
-					DrawStyleMap(test);
-				break;
-				
-				case 4:
-					DrawStyleOutlineMap(test);
-				break;
-				
-				case 5:
-					test->ProcessRooms(9, 3, 1);
-					cout<<(*test)<<std::endl;
-				break;
-				
-				case -1:
-				break;
-				
-				default:
-				break;
-			}
-			
-			cout<<"0. Generate New Map\n1. Save map\n2. Load Map\n3. StyleMap";
-			cout<<"\n4. OutlineMap\n5. Process\n-1. Quit\n\n";
-			cin >> x;
+	ArgParser AP;
+    AP.AddOptions(
+        {
+			{ "-d", "--dimensions", "Dimensions of the floor", true },
+			{"-f", "--fillpercentage", "What percent to fill the floor up to", false},
+			{"-n", "--organic", "Organic styled or room-styled", false},
+			{"-c", "--connect", "Fully connect map", false},
+			{"-nr", "--norandom", "Don't use random seed", false},
+			{"-s", "--smoothing", "Smoothing level", false},
+			{"-dn", "--dense", "Dense version of non-organic map", false},
 		}
-		
-		delete test;
-	}
+    );
+
+	int fillPercentage, smoothing;
+	bool rs, connect, organic, dense;
 	
-	else
+	std::vector<int> dimensions;
+
+	if(!AP.Parse(argx, argv))
 	{
-		test->Clear();
-		//cout<<(*test);
-		Leaf* tmp = new Leaf(0, 0, test->GetWidth(), test->GetHeight());
-		tmp->Generate(test, 3, 15);
-		cout<<(*test);
+		std::cout<<"Parse failed"<<std::endl;
+		return 0;
 	}
+
+	if(AP.IsSet("dimensions"))
+		dimensions = AP.GetVector<int>("dimensions");
+	else
+		dimensions = {60, 50};
+
+	if(AP.IsSet("fillpercentage"))
+		fillPercentage = AP.Get<int>("fillpercentage");
+	else
+		fillPercentage = 50;
+
+	if(AP.IsSet("smoothing"))
+		smoothing = AP.Get<int>("smoothing");
+	else
+		smoothing = 2;
+
+
+	rs = !(AP.Get<bool>("norandom"));
+	connect = AP.Get<bool>("connect");
+	organic = AP.Get<bool>("organic");
+	dense = AP.Get<bool>("dense");
+
+	RoomSystem RC;
+	
+	Floor* test = 
+		new Floor(dimensions[0], dimensions[1], fillPercentage, rs, connect);
+	
+	//inorganic dungeon
+	if( !organic )
+	{
+		if(AP.IsSet("fillpercentage"))
+			fillPercentage = AP.Get<int>("fillpercentage");
+		else
+			fillPercentage = 10;
+
+		test->Clear();
+		RC.Generate(test, fillPercentage, dense);
+	}
+		
+	cout<<(*test)<<std::endl;
+		
+	int x;
+	std::string name;
+		
+	while(x!=-1)
+	{
+		cout<<"0. Generate New Map\n1. Save map\n2. Load Map\n3. StyleMap";
+		cout<<"\n4. OutlineMap\n5. Process\n6. Toggle Connect\n-1. Quit\n\n";
+		cin >> x;
+
+		//need to check if actually read a char, but eh.
+
+		switch(x)
+		{
+			case 0:
+				if (organic)
+					test->Generate(fillPercentage, rs, 0, smoothing, connect);
+				else
+				{
+					test->Clear();
+					RC.Generate(test, fillPercentage, dense);
+				}
+				cout<<(*test)<<std::endl;
+			break;
+				
+			case 1:
+				cout << "Enter filename."<< std::endl;
+				cin >> name;
+				test->SaveFloor(name);
+				cout << "Saved!" <<std::endl;
+			break;
+				
+			case 2:
+				cout << "Enter filename."<< std::endl;
+				cin >> name;
+				test->LoadFloor(name);
+				cout<<(*test)<<std::endl;
+			break;
+				
+			case 3:
+				DrawStyleMap(test);
+			break;
+			
+			case 4:
+				DrawStyleOutlineMap(test);
+			break;
+				
+			case 5:
+				test->ProcessRooms(9, 3, 1);
+				cout<<(*test)<<std::endl;
+			break;
+
+			case 6:
+				connect = !connect;
+			break;
+				
+			case -1:
+			break;
+			
+			default:
+			break;
+		}
+	}
+
+	delete test;
+
 	return 0;
 }
 

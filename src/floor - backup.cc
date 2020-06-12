@@ -1,4 +1,4 @@
-#include "world.h"
+#include "floor.h"
 
 //=======================TILE========================================
 
@@ -78,7 +78,6 @@ Room::Room(int x, int y, int width, int height, vector< vector<int> > map )
 			}
 		}
 	}
-	
 }
 
 Room::Room(vector<Tile> _tiles, vector< vector<int> > map, int _id)
@@ -191,8 +190,6 @@ void Floor::Generate(int fillPercentage, bool useRandomSeed, int seed, int smoot
 		vector<int>tmp(_height);
 		_map.push_back(tmp);
 	}
-	
-	//cout<<"Map width..."<<_map.size()<<std::endl;
 	
 	RandomFillMap(useRandomSeed, seed, fillPercentage);
 	
@@ -903,59 +900,231 @@ void Floor::SmoothRoom(Room* room)
 	}
 }
 
-//======================WORLD METHODS=================================
-//constructor
-/*
-World::World(const string& name= "Earth", int floors, int difficulty= 1)
+//================= to do =======================
+//just iterate over the tiles and draw them
+void Floor::AddRoom(Room* room)
 {
-	_name = name;
-	_data = new Floor*[floors];
-	_floors = floors;
-	_current = 0;
-	_difficulty = difficulty;
-	cout<<"Generating..."<<endl;
-	generate();
-}
-
-World::~World(){
-	
-}
-
-Floor* World::getFloor(int index)
-{
-	return _data[index];
-}
-
-//generate all the floors for the world
-void World::generate()
-{
-	//think of a better equation for scaling difficulty
-	int diff = 1;
-	//iterate over every floor, delete it and create a new one
-	for(int i=0; i<_floors; i++){
-		delete _data[i];
-		_data[i] = new Floor(diff);
+	for (auto& tile : room->tiles)
+	{
+		
+		if(InMapRange(tile.x, tile.y))
+			_map[tile.x][tile.y] = 0;
 	}
-	return;
+
+	_rooms.push_back(room);
 }
 
-void World::print()
-{
-	_data[_current]->print();
-}
+//===========================================================================================
 
-void World::clear()
+void RoomSystem::Generate(Floor* grid, int minS, int maxS, int numRooms, int numSteps)
 {
+	nodes.clear();
+	cmX = cmY = 0;
+	bounds.x = grid->GetWidth() - 1;
+	bounds.y = grid->GetHeight() - 1;
+
+	PopulateSystem(minS, maxS, grid->GetWidth(), grid->GetHeight(), numRooms);
+
+	for(int i = 0; i < numSteps; i++) Tick();
+	for( auto& RN : nodes ) AddRoomToFloor(grid, RN);
 	
-	return;
-}
-
-void World::update()
-{
+	Graph<RoomNode> G = ConnectSystem();
+	auto mst = G.MST();
 	
+	AddCycles(mst);
+	auto links = mst.GetEdges();
+
+	std::cout<<"MST has "<<links.size()<<" edges"<<std::endl;
+	AddEdgesToFloor(grid, links);
 }
 
-void World::move()
+void RoomSystem::PopulateSystem(int minSize, int maxSize, int dimX, int dimY, int numRooms)
 {
-	_data[_current]->move();
-}*/
+	vector< std::pair<RoomNode* , int> > elements;
+	vector< RoomNode* > tmp;
+
+	for(int i = 0; i < numRooms * 2; i++)
+	{
+		//get a random x, y  in the range of the room dimensions
+		int s = minSize + rand() % ( maxSize - minSize + 1 );
+		//keep the room in range
+		int x = rand() % (dimX - s - 1) + 1;
+		int y = rand() % (dimY - s - 1) + 1;
+
+		RoomNode* r = new RoomNode(x, y, s);
+		tmp.push_back(r);
+	}
+
+	//sort based on fewest surrounding things
+	for(int i = 0; i < tmp.size(); i++)
+	{
+		int surrounding = GetSurroundingNodes(tmp[i], 10, tmp).size();
+		elements.push_back(std::make_pair(tmp[i], surrounding));
+	}
+
+	std::sort( elements.begin(), elements.end(), 
+		[]( const std::pair<RoomNode* , int>& A, 
+			const std::pair<RoomNode* , int>& B) -> bool 
+			{
+				return A.second > B.second;
+			});
+	for(int i = 0; i < numRooms; i++)
+	{
+		nodes.push_back(elements[i].first);
+	}
+}
+
+void RoomSystem::Tick() 
+{
+	CalculateCoM(cmX, cmY);
+
+	for( int i = 0; i < nodes.size(); i++)
+	{
+		//should actually have to do with node's size
+		AdjustNode(nodes[i], GetSurroundingNodes(nodes[i], 10, nodes));
+	}
+}
+
+std::vector<RoomNode*> RoomSystem::GetSurroundingNodes(RoomNode* R, int distance, std::vector<RoomNode*> s)
+{
+	std::vector<RoomNode*> out;
+
+	for( int i = 0; i < s.size(); i++)
+	{
+		if(vec2::VecDistance(R->GetPosition(), s[i]->GetPosition()) < distance)
+			out.push_back(s[i]);
+	}
+	
+	return out;
+}
+
+//==================== to do =========================
+//apply the vector of the surrounding nodes to the main node
+//maybe apply the "elastic" model later on if it isn't as nice
+void RoomSystem::AdjustNode(RoomNode* node, std::vector<RoomNode*> surrounding)
+{
+	for( auto& n : surrounding)
+	{
+		vec2 pos = node->GetPosition();
+		vec2 dir = n->GetPosition() - pos;
+
+		if(dir.magnitude() != 0)
+			dir = dir.normalize();
+
+		dir.scale(n->GetSize());
+
+		pos = pos - dir;
+
+		if(pos.x + node->GetSize() > bounds.x)
+			pos.x = bounds.x - node->GetSize();
+
+		if(pos.x < 1 )
+			pos.x = 1;
+
+		if(pos.y + node->GetSize() > bounds.y)
+			pos.y = bounds.y - node->GetSize();
+
+		if(pos.y < 1)
+			pos.y = 1;
+
+
+		node->SetPosition(pos);
+	}
+
+	vec2 endpos = node->GetPosition();
+}
+
+void RoomSystem::CalculateCoM(int& x, int& y)
+{
+	int M= 0, X = 0, Y = 0;
+	int tx, ty;
+
+	for(int i = 0; i < nodes.size(); i++)
+	{
+		vec2 pos = nodes[i]->GetPosition();
+		X += pos.x * nodes[i]->GetSize();
+		Y += pos.y * nodes[i]->GetSize();
+
+		M += nodes[i]->GetSize();
+	}
+
+	x = std::floor((float)X/(float)M);
+	y = std::floor((float)Y/(float)M);
+}
+
+//create a graph out of the nodes, then connect all of them with the others
+Graph<RoomNode> RoomSystem::ConnectSystem() 
+{
+	Graph<RoomNode> G;
+
+	//avoid this somehow..
+	for( int j = 0 ; j < nodes.size(); j++ )
+	{
+		G.AddNode(nodes[j]);
+	}
+
+	for( int i = 0 ; i < nodes.size() - 1; i++ )
+	{
+		for( int j = i+1 ; j < nodes.size(); j++ )
+		{
+			Node<RoomNode>* A = G.GetNode(nodes[i]);
+			Node<RoomNode>* B = G.GetNode(nodes[j]);
+
+			if(A == NULL || B == NULL)
+			{
+				std::cout<<"We have a problem here..."<<std::endl;
+				continue;
+			}
+
+			G.AddEdge(A, B, 
+				vec2::VecDistance(
+					nodes[i]->GetPosition(), 
+					nodes[j]->GetPosition()
+					)
+				);
+		}
+	}	
+
+	return G;
+}
+
+//======================= to do =========================
+void RoomSystem::AddCycles(Graph<RoomNode>& MST)
+{
+	auto nodes = MST.GetNodes();
+	for(auto& node1 : nodes)
+	{
+		for(auto& node2 : nodes)
+		{
+			//some asinine factor here
+			int distance = MST.Distance(node1, node2);
+			if( distance > 3)
+			{
+				MST.AddEdge(node1, node2, distance);
+			}
+		}
+	}
+}
+
+//======================= to do =========================
+void RoomSystem::AddEdgesToFloor(Floor* grid, vector< Edge<RoomNode> >& edges)
+{
+	for(auto& edge : edges)
+	{
+		grid->ConnectRooms(edge.to->data->GetRoom(),
+		edge.from->data->GetRoom(), true);
+	}
+}
+
+//================= to do ====================
+//need to create room then add it to the floor
+void RoomSystem::AddRoomToFloor(Floor* grid, RoomNode* room)
+{
+	Room* rm;
+	vec2 pos = room->GetPosition();
+	rm = new Room(pos.x, pos.y, room->GetSize(), room->GetSize(), grid->_map);
+
+	room->SetRoom(rm);
+
+	grid->AddRoom( room->GetRoom() );
+}
