@@ -14,11 +14,11 @@ I highly recommend you take a look at those!
 
 ## Compilation
 
-`CMake
+`CMake`
 
 or
 
-`g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11
+`g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11`
 
 ## Usage
 
