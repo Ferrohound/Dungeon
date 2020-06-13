@@ -3,6 +3,10 @@ Sample procedurally generated dungeon crawler
 
 See LICENSE.txt
 Author: Ferrohound
+
+Seems like floor generates organic maps
+RoomSystem generates the inorganic, no binary space partitioning used
+
 */
 
 #include <stdio.h>
@@ -11,7 +15,7 @@ Author: Ferrohound
 #include <ctime>
 #include <fstream>
 
-#include "floor.h"
+#include "MapGenerator.h"
 #include "argParser.h"
 
 using std::cout;
@@ -21,7 +25,7 @@ using std::endl;
 #define offset "		"
 
 //maybe have an outline of some sort
-void DrawStyleMap(Floor* t)
+void DrawStyleMap(Grid* t)
 {
 	for(int i = 0 ; i < t->_map.size(); i++)
 	{
@@ -40,7 +44,7 @@ void DrawStyleMap(Floor* t)
 	}
 }
 
-void DrawStyleOutlineMap(Floor* t)
+void DrawStyleOutlineMap(Grid* t)
 {
 	for(int i = 0 ; i < t->_map.size(); i++)
 	{
@@ -66,7 +70,7 @@ void DrawStyleOutlineMap(Floor* t)
 }
 
 //do this eventually,,
-void DrawOutline(Floor* t)
+void DrawOutline(Grid* t)
 {
 	
 }
@@ -120,21 +124,28 @@ int main(int argx, char*argv[])
 	dense = AP.Get<bool>("dense");
 
 	RoomSystem RC;
+	MapSystem MC;
 	
-	Floor* test = 
-		new Floor(dimensions[0], dimensions[1], fillPercentage, rs, connect);
+	/*Grid* test = 
+		new Grid(dimensions[0], dimensions[1], fillPercentage, rs, connect);*/
+	
+	Grid* test = new Grid(dimensions[0], dimensions[1]);
+
+	if(AP.IsSet("fillpercentage"))
+		fillPercentage = AP.Get<int>("fillpercentage");
+	else
+		fillPercentage = 10;
 	
 	//inorganic dungeon
 	if( !organic )
 	{
-		if(AP.IsSet("fillpercentage"))
-			fillPercentage = AP.Get<int>("fillpercentage");
-		else
-			fillPercentage = 10;
-
-		test->Clear();
 		RC.Generate(test, fillPercentage, dense);
 	}
+	else
+	{
+		MC.Generate(test, fillPercentage, rs, 0, smoothing, connect);
+	}
+	
 		
 	cout<<(*test)<<std::endl;
 		
@@ -153,7 +164,7 @@ int main(int argx, char*argv[])
 		{
 			case 0:
 				if (organic)
-					test->Generate(fillPercentage, rs, 0, smoothing, connect);
+					MC.Generate(test, fillPercentage, rs, 0, smoothing, connect);
 				else
 				{
 					test->Clear();
@@ -185,7 +196,7 @@ int main(int argx, char*argv[])
 			break;
 				
 			case 5:
-				test->ProcessRooms(9, 3, 1);
+				MC.ProcessRooms(test, 9, 3, 1);
 				cout<<(*test)<<std::endl;
 			break;
 

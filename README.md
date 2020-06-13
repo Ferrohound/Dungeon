@@ -1,6 +1,8 @@
 # Simple Procedural room-based Dungeon and organic Map Generator
 
-Loosely based on [this blog post](https://www.gamasutra.com/blogs/AAdonaac/20150903/252889/Procedural_Dungeon_Generation_Algorithm.php) and [this reddit post](https://www.reddit.com/r/gamedev/comments/1dlwc4/procedural_dungeon_generation_algorithm_explained/)
+Based on [this blog post](https://www.gamasutra.com/blogs/AAdonaac/20150903/252889/Procedural_Dungeon_Generation_Algorithm.php), [this reddit post](https://www.reddit.com/r/gamedev/comments/1dlwc4/procedural_dungeon_generation_algorithm_explained/) and [this youtube series](https://www.youtube.com/watch?v=eJEpeUH1EMg)
+
+I highly recommend you take a look at those!
 
 ---------------------
 
@@ -8,6 +10,7 @@ Loosely based on [this blog post](https://www.gamasutra.com/blogs/AAdonaac/20150
 * Package as library
 * Finish debugging
 * Do something with the .cc files
+* Perlin noise instead of pure random for organic map
 
 ## Compilation
 
@@ -15,7 +18,7 @@ Loosely based on [this blog post](https://www.gamasutra.com/blogs/AAdonaac/20150
 
 or
 
-`g++ main.cpp floor.cpp BSP.cpp -I include -o main.exe -std=c++11
+`g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11
 
 ## Usage
 

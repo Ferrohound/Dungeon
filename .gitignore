@@ -18,7 +18,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # ignore visual studio code directory
-src/.vscode
+src/.vscode/*
+build
 
 # =========================
 # Operating System Files
