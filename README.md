@@ -18,7 +18,7 @@ I highly recommend you take a look at those!
 
 or
 
-`g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11`
+`g++ main.cpp MapGenerator.cpp Grid.cpp -I include -o main.exe -std=c++11`
 
 ## Usage
 
