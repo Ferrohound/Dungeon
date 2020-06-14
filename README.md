@@ -29,7 +29,6 @@ ar rcs libGrid.a Grid.o
 enter ./demo
 
 `g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11 -L../lib -lGrid -lMapGenerator`
-
 ## Usage
 
 `main.exe --help
