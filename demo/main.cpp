@@ -98,7 +98,6 @@ int main(int argx, char*argv[])
 
 	if(!AP.Parse(argx, argv))
 	{
-		std::cout<<"Parse failed"<<std::endl;
 		return 0;
 	}
 
@@ -125,6 +124,8 @@ int main(int argx, char*argv[])
 
 	RoomSystem RC;
 	MapSystem MC;
+
+	MC.setPerlin(true);
 	
 	/*Grid* test = 
 		new Grid(dimensions[0], dimensions[1], fillPercentage, rs, connect);*/

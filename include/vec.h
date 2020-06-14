@@ -3,6 +3,18 @@
 #include <cmath>
 #include <iostream>
 
+/*
+    macro from the Perlin Noise wiki
+ as an alternative, this slightly faster equivalent function (macro) can be used:
+ * #define lerp(a0, a1, w) ((a0) + (w)*((a1) - (a0))) 
+ */
+// math function that I will need to move somewhere else later on
+//lerp a to b over t
+//https://www.geeksforgeeks.org/inline-functions-cpp/
+inline float lerp(float a, float b, float t) {
+    return ( 1.0f - t ) * a + (t * b);
+}
+
 struct vec2
 {
     union

@@ -1,5 +1,220 @@
 #include "MapGenerator.h"
 
+//=============================== HELPER FUNCTIONS ================================
+//may remove these from the class and have these by themselves if useful enough
+
+void DrawCircle(Grid* grid, Tile t, int r, int fill)
+{
+	grid->DrawCircle(t, r, fill);	
+}
+
+//get the line of tiles connecting start to end
+vector<Tile> GetLine(Tile start, Tile end)
+{
+	//cout<<"Getting Line"<<std::endl;
+	vector<Tile> line;
+		
+	int x = start.x;
+	int y = start.y;
+	
+	int dx = end.x - start.x;
+	int dy = end.y - start.y;
+	
+	bool inverted = false;
+	
+	int step = (dx < 0) ? -1:1;
+	int gradientStep = (dy < 0) ? -1:1;
+	
+	int longest = abs(dx);
+	int shortest = abs(dy);
+	
+	if(longest < shortest)
+	{
+		inverted = true;
+		longest = abs(dy);
+		shortest = abs(dx);
+		
+		step = (dy < 0) ? -1:1;
+		gradientStep = (dx < 0) ? -1:1;
+	}
+	
+	int gradientAccumulation = longest/2;
+	
+	for(int i = 0; i<longest ; i++)
+	{
+		line.push_back(Tile(x,y));
+		//cout<<x<< " " << y <<"=>";
+		
+		if(inverted)
+			y+=step;
+		else
+			x+=step;
+		
+		gradientAccumulation += shortest;
+		
+		if(gradientAccumulation >= longest)
+		{
+			if(inverted)
+				x+=gradientStep;
+			else
+				y+=gradientStep;
+			
+			gradientAccumulation-=longest;
+		}
+	}
+	//cout<<std::endl;
+	return line;
+}
+
+void CreatePassage(Grid* grid, Room* A, Room* B, Tile tA, Tile tB, int fill)
+{
+	//cout<<"Creating Passage"<<std::endl;
+	Room::ConnectRooms(A, B);
+	
+	vector<Tile> line = GetLine(tA, tB);
+	
+	for(int i = 0; i < line.size(); i++)
+	{
+		//===================================== TO DO
+		//editing a bit..
+		DrawCircle(grid, line[i], 1, fill);
+	}
+}
+
+
+void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular, int fill)
+{
+	int lowestD = (int) (pow((A->border[0].x - B->border[0].x), 2) +
+		(pow((A->border[0].y - B->border[0].y), 2)));
+	
+	Tile bestTileA = Tile();
+	Tile bestTileB = Tile();
+	
+	for(int tA = 0; tA < A->border.size(); tA ++)
+	{
+		for(int tB = 0; tB < B->border.size(); tB ++)
+		{
+			Tile tileA =  A->border[tA];
+			Tile tileB =  B->border[tB];
+						
+			int distance = (int) (pow((tileA.x - tileB.x), 2) + 
+				 pow((tileA.y - tileB.y), 2));
+						 
+			if(distance < lowestD)
+			{
+				lowestD = distance;
+						
+				bestTileA = tileA;
+				bestTileB = tileB;
+			}
+		}
+	}
+	
+	//==================================================== TO DO
+	//create an angular, maybe even jagged connection
+	if(angular)
+	{
+		//CreatePassage(A, B, bestTileA, bestTileB);
+		Tile corner = Tile(/*bestTileA.x - */bestTileB.x, bestTileA.y/* - bestTileB.y*/);
+		vector<Tile> line1 = GetLine(bestTileA, corner);
+		vector<Tile> line2 = GetLine(corner, bestTileB);
+
+		for(int i = 0; i < line1.size(); i++)
+		{
+			//===================================== TO DO
+			DrawCircle(grid, line1[i], 1, fill);
+		}
+
+		for(int i = 0; i < line2.size(); i++)
+		{
+			//===================================== TO DO
+			DrawCircle(grid, line2[i], 1, fill);
+		}
+
+		Room::ConnectRooms(A, B);
+
+	}
+	//otherwise, follow gradient
+	else
+	{
+		CreatePassage(grid, A, B, bestTileA, bestTileB, 2);
+	}
+}
+
+void PerlinFillMap(Grid* grid, int seed)
+{
+	PerlinNoise p;
+	float* tmp = RandomArray(grid->GetHeight() * grid->GetWidth(), seed);
+
+	//this gives us values from 0 to 1 but our map will be looking at 0-9 so let's
+	//process it a bit..
+	float* pMap = p.noise2D(grid->GetWidth(), grid->GetHeight(),
+	tmp, 4);
+
+	for(int i = 0; i < grid->GetHeight() * grid->GetWidth(); i++)
+	{
+		pMap[i] *= 10;
+	}
+
+	grid->ImportFloor(pMap, grid->GetWidth(), grid->GetHeight());
+
+	delete tmp;
+	delete pMap;
+}
+
+//randomly fill a map given a fillPercentage
+void RandomFillMap(Grid* grid, bool useRandomSeed, int seed, int fillPercentage, bool debug)
+{
+	//cout<<"Filling with random data"<<std::endl;
+	if(useRandomSeed)
+		//whatever this is in C++
+		seed = time(NULL);
+	
+	srand(seed);
+	
+	if (debug)
+		cout<<"have seed..."<<std::endl;
+	
+	for(int x = 0; x < grid->GetWidth(); x++)
+	{
+		for(int y = 0; y < grid->GetHeight(); y++)
+		{
+			if(x == 0 || x == grid->GetWidth()-1 || y == 0 || y == grid->GetHeight() - 1)
+				grid->_map[x][y] = 1;
+			else
+				grid->_map[x][y] = (rand() % 101 < fillPercentage) ? 1:0;
+		}
+	}		
+	//cout<<"done filling"<<std::endl;
+}
+
+//get each tile's x,y position and set its height to the average of the surrounding
+//tiles
+void SmoothRoom(Grid* grid, Room* room, int radius)
+{
+	float avg = 0;
+	for(int k = 0; k < room->tiles.size(); k++)
+	{
+		avg = grid->GetAvgWallValue(room->tiles[k].x, room->tiles[k].y, radius);
+		grid->_map[room->tiles[k].x][room->tiles[k].y] = avg;
+			
+	}
+}
+
+//================= to do =======================
+//just iterate over the tiles and draw them
+void AddRoom(Grid* grid, Room* room)
+{
+	for (auto& tile : room->tiles)
+	{
+		
+		if(grid->InMapRange(tile.x, tile.y))
+			grid->_map[tile.x][tile.y] = 0;
+	}
+	//might relocate this to the system itself
+	//_rooms.push_back(room);
+}
+
 
 //======================ROOM METHODS==================================
 
@@ -420,7 +635,13 @@ void MapSystem::Generate(Grid* grid, int fillPercentage, bool useRandomSeed, int
 		grid->_map.push_back(tmp);
 	}*/
 	
-	RandomFillMap(grid, useRandomSeed, seed, fillPercentage, debug);
+	if(!perlin)
+		RandomFillMap(grid, useRandomSeed, seed, fillPercentage, debug);
+	else
+	{
+		PerlinFillMap(grid, seed);
+	}
+	
 	
 	for(int i = 0; i < smoothing; i++)
 	{
@@ -650,11 +871,6 @@ void MapSystem::ConnectClosestRooms(Grid* grid, vector<Room*> rooms, bool forceA
 	//cout<<"Done Connecting Rooms"<<std::endl;
 }
 
-void DrawCircle(Grid* grid, Tile t, int r, int fill)
-{
-	grid->DrawCircle(t, r, fill);	
-}
-
 void MapSystem::ProcessRooms(Grid* grid, int max, int min, int smoothing)
 {
 	
@@ -681,193 +897,4 @@ void MapSystem::ProcessRooms(Grid* grid, int max, int min, int smoothing)
 			}
 		}
 	}
-}
-
-//=============================== HELPER FUNCTIONS ================================
-//may remove these from the class and have these by themselves if useful enough
-
-//get the line of tiles connecting start to end
-vector<Tile> GetLine(Tile start, Tile end)
-{
-	//cout<<"Getting Line"<<std::endl;
-	vector<Tile> line;
-		
-	int x = start.x;
-	int y = start.y;
-	
-	int dx = end.x - start.x;
-	int dy = end.y - start.y;
-	
-	bool inverted = false;
-	
-	int step = (dx < 0) ? -1:1;
-	int gradientStep = (dy < 0) ? -1:1;
-	
-	int longest = abs(dx);
-	int shortest = abs(dy);
-	
-	if(longest < shortest)
-	{
-		inverted = true;
-		longest = abs(dy);
-		shortest = abs(dx);
-		
-		step = (dy < 0) ? -1:1;
-		gradientStep = (dx < 0) ? -1:1;
-	}
-	
-	int gradientAccumulation = longest/2;
-	
-	for(int i = 0; i<longest ; i++)
-	{
-		line.push_back(Tile(x,y));
-		//cout<<x<< " " << y <<"=>";
-		
-		if(inverted)
-			y+=step;
-		else
-			x+=step;
-		
-		gradientAccumulation += shortest;
-		
-		if(gradientAccumulation >= longest)
-		{
-			if(inverted)
-				x+=gradientStep;
-			else
-				y+=gradientStep;
-			
-			gradientAccumulation-=longest;
-		}
-	}
-	//cout<<std::endl;
-	return line;
-}
-
-void CreatePassage(Grid* grid, Room* A, Room* B, Tile tA, Tile tB, int fill)
-{
-	//cout<<"Creating Passage"<<std::endl;
-	Room::ConnectRooms(A, B);
-	
-	vector<Tile> line = GetLine(tA, tB);
-	
-	for(int i = 0; i < line.size(); i++)
-	{
-		//===================================== TO DO
-		//editing a bit..
-		DrawCircle(grid, line[i], 1, fill);
-	}
-}
-
-
-void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular, int fill)
-{
-	int lowestD = (int) (pow((A->border[0].x - B->border[0].x), 2) +
-		(pow((A->border[0].y - B->border[0].y), 2)));
-	
-	Tile bestTileA = Tile();
-	Tile bestTileB = Tile();
-	
-	for(int tA = 0; tA < A->border.size(); tA ++)
-	{
-		for(int tB = 0; tB < B->border.size(); tB ++)
-		{
-			Tile tileA =  A->border[tA];
-			Tile tileB =  B->border[tB];
-						
-			int distance = (int) (pow((tileA.x - tileB.x), 2) + 
-				 pow((tileA.y - tileB.y), 2));
-						 
-			if(distance < lowestD)
-			{
-				lowestD = distance;
-						
-				bestTileA = tileA;
-				bestTileB = tileB;
-			}
-		}
-	}
-	
-	//==================================================== TO DO
-	//create an angular, maybe even jagged connection
-	if(angular)
-	{
-		//CreatePassage(A, B, bestTileA, bestTileB);
-		Tile corner = Tile(/*bestTileA.x - */bestTileB.x, bestTileA.y/* - bestTileB.y*/);
-		vector<Tile> line1 = GetLine(bestTileA, corner);
-		vector<Tile> line2 = GetLine(corner, bestTileB);
-
-		for(int i = 0; i < line1.size(); i++)
-		{
-			//===================================== TO DO
-			DrawCircle(grid, line1[i], 1, fill);
-		}
-
-		for(int i = 0; i < line2.size(); i++)
-		{
-			//===================================== TO DO
-			DrawCircle(grid, line2[i], 1, fill);
-		}
-
-		Room::ConnectRooms(A, B);
-
-	}
-	//otherwise, follow gradient
-	else
-	{
-		CreatePassage(grid, A, B, bestTileA, bestTileB, 2);
-	}
-}
-
-//randomly fill a map given a fillPercentage
-void RandomFillMap(Grid* grid, bool useRandomSeed, int seed, int fillPercentage, bool debug)
-{
-	//cout<<"Filling with random data"<<std::endl;
-	if(useRandomSeed)
-		//whatever this is in C++
-		seed = time(NULL);
-	
-	srand(seed);
-	
-	if (debug)
-		cout<<"have seed..."<<std::endl;
-	
-	for(int x = 0; x < grid->GetWidth(); x++)
-	{
-		for(int y = 0; y < grid->GetHeight(); y++)
-		{
-			if(x == 0 || x == grid->GetWidth()-1 || y == 0 || y == grid->GetHeight() - 1)
-				grid->_map[x][y] = 1;
-			else
-				grid->_map[x][y] = (rand() % 101 < fillPercentage) ? 1:0;
-		}
-	}		
-	//cout<<"done filling"<<std::endl;
-}
-
-//get each tile's x,y position and set its height to the average of the surrounding
-//tiles
-void SmoothRoom(Grid* grid, Room* room, int radius)
-{
-	float avg = 0;
-	for(int k = 0; k < room->tiles.size(); k++)
-	{
-		avg = grid->GetAvgWallValue(room->tiles[k].x, room->tiles[k].y, radius);
-		grid->_map[room->tiles[k].x][room->tiles[k].y] = avg;
-			
-	}
-}
-
-//================= to do =======================
-//just iterate over the tiles and draw them
-void AddRoom(Grid* grid, Room* room)
-{
-	for (auto& tile : room->tiles)
-	{
-		
-		if(grid->InMapRange(tile.x, tile.y))
-			grid->_map[tile.x][tile.y] = 0;
-	}
-	//might relocate this to the system itself
-	//_rooms.push_back(room);
 }

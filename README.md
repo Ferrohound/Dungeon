@@ -14,11 +14,21 @@ I highly recommend you take a look at those!
 
 ## Compilation
 
-`CMake`
+```cmake . -D build_demo=TRUE
+make
+```
 
-or
+or enter ./src
 
-`g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11`
+```g++ -c -fPIC Grid.cpp -o grid.o
+g++ -c -fPIC MapGenerator.cpp perlin_noise.cpp -o MapGenerator.o
+ar rcs libMapGenerator.a MapGenerator.o
+ar rcs libGrid.a Grid.o
+```
+
+enter ./demo
+
+`g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11 -L../lib -lGrid -lMapGenerator`
 
 ## Usage
 

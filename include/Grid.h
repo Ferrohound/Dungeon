@@ -61,6 +61,10 @@ class Grid{
 		
 		void LoadFloor();
 		void SaveFloor();
+
+		//read in and put out an int array grid
+		void ImportFloor(float* grid, int width, int height);
+		float* ExportFloor();
 		
 		void Clear();
 		
@@ -84,6 +88,8 @@ class Grid{
 			return output; 
 		}
 		
+		//no real reason to use a vector here, could be a float double array and use a
+		//get(x, y) function
 		std::vector< vector<int> > _map;
 		bool debug;
 	private:

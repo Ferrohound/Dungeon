@@ -1,11 +1,41 @@
-cmake_minimum_required (VERSION 2.6)
-project (DG)
+cmake_minimum_required (VERSION 2.8)
+project (DungeonGenerator)
 
+#set generator
+set(CMAKE_GENERATOR "MSYS Makefiles" CACHE INTERNAL "" #[[FORCE: sets it so that unless you use -G "makefile type" it defaults to this]])
+
+#can set from command line by cmake -D VARNAME=value
+set(build_demo TRUE CACHE BOOL "Build demo")
+set(library_dir ${CMAKE_CURRENT_SOURCE_DIR}/lib CACHE PATH "Where to put built libraries")
+
+message( STATUS ${library_dir} )
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${library_dir})
+
+#file(GLOB GRID_SRC "src/*.cpp" )
+#file(GLOB GENERATOR_SRC "src/*.cpp" )
+
+#[[
+    let's see if this applies to everything..
+    this works in later versions of cmake
+    set( CMAKE_CXX_STANDARD 11)
+]]
+
+#[[
+if (WIN32)
+    #do something
+endif (WIN32)
+
+elseif (UNIX)
+    #do something
+endif (UNIX)
+]]
 
 add_definitions( -std=c++11 )
-
-file(GLOB SRC_FILES "src/*.cpp" )
-
 include_directories("include")
 
-add_executable(DG ${SRC_FILES})
+add_subdirectory(src)
+
+if(${build_demo})
+    add_subdirectory(demo)
+endif()

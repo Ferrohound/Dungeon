@@ -93,7 +93,7 @@
 //#include <utility> /*std::pair, std::make_pair */
 
 #include "Grid.h"
-
+#include "perlin_noise.h"
 #include "Graph.h"
 #include "vec.h"
 
@@ -215,7 +215,11 @@ class RoomSystem
 class MapSystem
 {
 	public:
-		MapSystem() {};
+		MapSystem() { debug = false; perlin = false;}
+
+		void setDebug(bool newval) { debug = newval; }
+		void setPerlin(bool newval) { perlin = newval; }
+		
 		void Generate(Grid* grid, int fillPercentage = 30, bool useRandomSeed = true, int seed = 10, int smoothing = 2, bool connect = true);
 
 		//remove a wall or room region that is below a certain threshold and connect
@@ -237,6 +241,6 @@ class MapSystem
 	private:
 		std::vector< Room* > _rooms;
 		std::vector< Room* > _spaces;
-		bool debug;
+		bool debug, perlin;
 		Grid* _grid;
 };

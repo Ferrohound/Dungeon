@@ -391,3 +391,41 @@ void Grid::SaveFloor(string path)
 	}
 	file.close();
 }
+
+void Grid::ImportFloor(float* grid, int width, int height)
+{
+	_map.clear();
+	_width = width;
+	_height = height;
+	
+	for(int i = 0; i < _width; i++)
+	{
+		vector<int>tmp(_height);
+		_map.push_back(tmp);
+	}
+
+	for(int x = 0; x < width; x++)
+	{
+		for(int y = 0; y < height; y++)
+		{
+			_map[x][y] = grid[ y * width + x];
+		}
+	}
+
+	cout<<"Done importing floor"<<std::endl;
+}
+
+float* Grid::ExportFloor()
+{
+	float* output = new float[ _width * _height ];
+
+	for(int x = 0; x < _width; x++)
+	{
+		for(int y = 0; y < _height; y++)
+		{
+			output[ y * _width + x] = _map[x][y];
+		}
+	}
+
+	return output;
+}
