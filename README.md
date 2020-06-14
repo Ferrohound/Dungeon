@@ -14,13 +14,16 @@ I highly recommend you take a look at those!
 
 ## Compilation
 
-```cmake . -D build_demo=TRUE
+Example compilation using MSYS2 MinGW-w64
+```
+cmake . -G "MSYS Makefiles" -D build_demo=TRUE
 make
 ```
 
 or enter ./src
 
-```g++ -c -fPIC Grid.cpp -o grid.o
+```
+g++ -c -fPIC Grid.cpp -o grid.o
 g++ -c -fPIC MapGenerator.cpp perlin_noise.cpp -o MapGenerator.o
 ar rcs libMapGenerator.a MapGenerator.o
 ar rcs libGrid.a Grid.o
