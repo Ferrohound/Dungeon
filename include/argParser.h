@@ -6,6 +6,27 @@
         {{ "-e", "--example", "This is a mandatory example flag", true },}
     );
 
+
+    //parse failed
+    if(!AP.Parse(argx, argv))
+	{
+		return 0;
+	}
+
+     --examplebool
+    connect = AP.Get<bool>("examplebool");
+
+    --exampleInt 5
+    if(AP.IsSet("exampleInt"))
+		example = AP.Get<int>("fillpercentage");
+	else
+		example = 50;
+
+    --exampleVector 1 2 3 4
+    if(AP.IsSet("exampleVector"))
+		dimensions = AP.GetVector<int>("dimensions");
+	else
+		dimensions = {60, 50};
 */
 #pragma once
 
