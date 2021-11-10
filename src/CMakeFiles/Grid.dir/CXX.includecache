@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/ferrohound/Documents/gamedev/generators/DungeonGenerator/src/Grid.cpp
+Grid.h
+C:/Users/ferrohound/Documents/gamedev/generators/DungeonGenerator/src/Grid.h
+
+include/Grid.h
+string.h
+-
+string
+-
+stdio.h
+-
+iostream
+-
+fstream
+-
+vector
+-
+queue
+-
+cmath
+-
+vec.h
+include/vec.h
+
+include/vec.h
+cmath
+-
+iostream
+-
+
