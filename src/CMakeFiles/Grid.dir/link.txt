@@ -1,2 +1,0 @@
-C:/msys64/mingw64/bin/ar.exe qc ../lib/libGrid.a CMakeFiles/Grid.dir/Grid.cpp.obj
-C:/msys64/mingw64/bin/ranlib.exe ../lib/libGrid.a

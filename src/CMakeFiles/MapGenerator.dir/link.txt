@@ -1,2 +1,0 @@
-C:/msys64/mingw64/bin/ar.exe qc ../lib/libMapGenerator.a CMakeFiles/MapGenerator.dir/MapGenerator.cpp.obj CMakeFiles/MapGenerator.dir/perlin_noise.cpp.obj
-C:/msys64/mingw64/bin/ranlib.exe ../lib/libMapGenerator.a
