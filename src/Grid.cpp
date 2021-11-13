@@ -1,11 +1,13 @@
 #include "Grid.h"
 
+
+#pragma region TILE_METHODS
 //=======================TILE========================================
 
 Tile::Tile()
 {
-	x = 0;
-	y = 0;
+	// x = 0;
+	// y = 0;
 	//pos = Vector2 { 0, 0 };
 }
 
@@ -16,65 +18,97 @@ Tile::Tile()
 	y = pos.y;
 }*/
 
-Tile::Tile(int _x, int _y)
-{
-	x = _x;
-	y = _y;
+// Tile::Tile(int _x, int _y)
+// {
+// 	x = _x;
+// 	y = _y;
 	
-	//pos = Vector2{ x, y };
-}
+// 	//pos = Vector2{ x, y };
+// }
 
 Tile::~Tile()
 {
 	
 }
 
+//========================= TILE FACTORY ===============================
+Tile* TileFactory::CreateTile()
+{
+	return new Tile();
+}
+
+#pragma endregion TILE_METHODS
+
+#pragma region GRID_METHODS
 //========================GRID METHODS================================
 bool Grid::InMapRange(int x, int y)
 {
 	return x >= 0 && x < _width && y >= 0 && y < _height;
 }
 
-//create a floor with the given dimensions and fillPercentage
-Grid::Grid( int width, int height ) : _width(width), _height(height)
+//create a floor with the given dimensions
+Grid::Grid( int width, int height, TileFactory* factory ) : _width(width), _height(height), _factory(factory)
 {
-    _map.clear();
+	//shouldn't need this..
+    //_map.clear();
 
     for(int i = 0; i < _width; i++)
 	{
-		vector<int>tmp(_height);
+		// vector< Tile* >tmp(_height);
+		vector<Tile*> tmp;
+		for(int j = 0; j < _height; j++)
+		{
+			tmp.push_back( _factory->CreateTile() );
+		}
 		_map.push_back(tmp);
 	}
+}
+
+//free all of our tiles
+Grid::~Grid()
+{
+	//calling vector clear calls the destructor for each element but not delete
+
 }
 
 
 void Grid::Clear()
 {
 	cout<<"Clearing"<<std::endl;
+
+	// free all of the tiles
+	/*for(int x = 0; x < _width; x++)
+	{
+		for(int y = 0; y < _height; y++)
+		{
+			delete _map[x][y];
+		}
+	}*/
 	
 	_map.clear();
 	
 	for(int i = 0; i < _width; i++)
 	{
-		vector<int>tmp(_height);
-		_map.push_back(tmp);
-	}
-	
-	for(int x = 0; x < _width; x++)
-	{
-		for(int y = 0; y < _height; y++)
+		// vector< Tile* >tmp(_height);
+		vector<Tile*> tmp;
+		for(int j = 0; j < _height; j++)
 		{
-			_map[x][y] = 1;
+			tmp.push_back( _factory->CreateTile() );
 		}
+		_map.push_back(tmp);
 	}
 	
 	cout<<"Done Clearing"<<std::endl;
 }
 
-bool Grid::IsOutlineTile(int x, int y)
+//a tile is defined as an outline when any of the surrounding
+//tiles is an "empty" spot (assuming the tile in question isn't)
+//empty itself
+bool Grid::IsOutlineTile(int x, int y, Tile* reference)
 {
 	if(!InMapRange(x,y)) return false;
-	
+
+	//check all of the surrounding tiles,	
 	for(int i = x-1; i < x+2; i++)
 	{
 		for(int j = y-1; j < y+2; j++)
@@ -83,51 +117,65 @@ bool Grid::IsOutlineTile(int x, int y)
 			if( i != x && j != y ) continue;
 			if(!InMapRange(i, j)) continue;
 			
-			if(_map[i][j] == 1) return true;
+			if(_map[i][j] == reference) return true;
 		}
 	}
 	return false;
 }
 
 //floodfill to get all tiles in the region
-vector<Tile> Grid::GetRegionTiles(int sx, int sy)
+vector< std::pair<int, int> > Grid::GetRegionTiles(int sx, int sy,  bool (*compare)(Tile* A, Tile* B) )
 {
-	vector<Tile> tiles;
+	vector<std::pair<int, int>> tiles;
+
+	//https://en.cppreference.com/w/cpp/language/lambda
+	//if the compare function is null, just compare pointer values
+	if(compare == NULL)
+	{
+		compare = [](Tile* A, Tile* B) -> bool {
+			if(A == B)
+				return true;
+			else
+				return false;
+		};
+	}
 		
 	//check if tile was looked at yet
 	//need to initialize each value, however, look at alternatives
-	int flags[_width][_height];
+	vector< vector <int> > flags(_width);
 	for(int i = 0; i < _width; i++)
 	{
+		vector<int> tmp(_height);
+		flags.push_back(tmp);
 		for(int j = 0; j < _height; j++)
 		{
 			flags[i][j] = 0;
 		}
 	}
 	
-	int tileType = _map[sx][sy];
+	Tile* tileType = _map[sx][sy];
 	
-	queue<Tile*> q;
-	
-	q.push(new Tile(sx,sy));
+	queue< std::pair<int, int> > q;
+	q.push( std::make_pair(sx, sy) );
+
 	flags[sx][sy] = 1;
 	
 	//breadth first search across tiles
 	while(!q.empty())
 	{
-		Tile* t = q.front();
+		std::pair<int, int> t = q.front();
 		q.pop();
-		tiles.push_back(*t);
+		tiles.push_back(t);
 		
-		for(int x = t->x-1; x <= t->x+1; x++)
+		for(int x = t.first - 1; x <= t.first + 1; x++)
 		{
-			for(int y = t->y-1; y <= t->y + 1; y++)
+			for(int y = t.second - 1; y <= t.second + 1; y++)
 			{
-				if(InMapRange(x, y) && (y == t->y || x == t->x) && flags[x][y] == 0 
-					&& tileType == _map[x][y])
+				if(InMapRange(x, y) && (y == t.second || x == t.first) && flags[x][y] == 0 
+					&& compare(tileType, _map[x][y]) )
 				{
 					flags[x][y] = 1;
-					q.push(new Tile(x, y));
+					q.push(std::make_pair(x, y));
 				}
 			}
 		}
@@ -136,35 +184,38 @@ vector<Tile> Grid::GetRegionTiles(int sx, int sy)
 	return tiles;
 }
 
-vector< vector<Tile> > Grid::GetRegions(int tileType)
+vector< vector<std::pair<int, int>> > Grid::GetRegions(Tile* tileType,  bool (*compare)(Tile* A, Tile* B) )
 {
 	//cout<<"Getting Regions"<<std::endl;
-	vector< vector<Tile> > regions;
-		
-	//check if tile was looked at yet
-	int flags[_width][_height];
+	vector< vector<std::pair<int, int>> > regions;
 	
+	//flags to determine which tiles have already been visited
+	vector< vector <int> > flags(_width);
 	for(int i = 0; i < _width; i++)
 	{
+		vector<int> tmp(_height);
+		flags.push_back(tmp);
 		for(int j = 0; j < _height; j++)
 		{
 			flags[i][j] = 0;
 		}
 	}
-		
+	
+	//iterate over every tile, could optimize this fairly easily
+	//by removing locations from the set as we touch them
 	for(int x = 0; x < _width; x++)
 	{
 		for(int y = 0; y < _height; y++)
 		{
-			if(flags[x][y] == 0 && _map[x][y] == tileType)
+			if(flags[x][y] == 0 && compare(_map[x][y], tileType) )
 			{
-				vector<Tile> newRegion = GetRegionTiles(x, y);
+				vector< std::pair<int, int> > newRegion = GetRegionTiles(x, y, compare);
 				regions.push_back(newRegion);
 				
 				for(int i = 0 ; i < newRegion.size(); i++)
 				{
-					Tile t = newRegion[i];
-					flags[t.x][t.y] = 1;
+					std::pair<int, int> t = newRegion[i];
+					flags[t.first][t.second] = 1;
 				}
 			}
 		}
@@ -173,67 +224,17 @@ vector< vector<Tile> > Grid::GetRegions(int tileType)
 	return regions;
 }
 
-//get how many walls surround a given position
-int Grid::GetSurroundingWallCount(int sx, int sy)
-{
-	int wallCount = 0;
-	
-	for(int x = sx-1; x <=sx+1; x++)
-	{
-		for(int y = sy-1; y <=sy+1; y++)
-		{
-			if(x == sx && y == sy)
-				continue;
-			//if out of bounds, increase wallcount to encourage the sides to be wall-filled
-			if(!InMapRange(x, y))
-				wallCount++;
-			else
-				wallCount+=_map[x][y];
-		}
-		
-	}
-	return wallCount;
-}
-
-//get the average value of the surrounding tiles within the given radius
-int Grid::GetAvgWallValue(int sx, int sy, int radius)
-{
-	int avg = 0;
-	int wallCount = 0;
-	
-	for(int x = sx-radius; x <=sx+radius; x++)
-	{
-		for(int y = sy-radius; y <=sy+radius; y++)
-		{
-			if(x == sx && y == sy)
-				continue;
-			//if out of bounds, increase wallcount to encourage the sides to be wall-filled
-			if(!InMapRange(x, y))
-				wallCount++;
-			else
-			{
-				wallCount++;
-				avg+=_map[x][y];
-			}
-		}
-		
-	}
-	
-	avg/=wallCount;
-	return avg;
-}
-
 //get the line of tiles connecting start to end
-vector<Tile> Grid::GetLine(Tile start, Tile end)
+vector<std::pair<int, int>> Grid::GetLine(std::pair<int, int> start, std::pair<int, int> end)
 {
 	//cout<<"Getting Line"<<std::endl;
-	vector<Tile> line;
+	vector<std::pair<int, int>> line;
 		
-	int x = start.x;
-	int y = start.y;
+	int x = start.first;
+	int y = start.second;
 	
-	int dx = end.x - start.x;
-	int dy = end.y - start.y;
+	int dx = end.first - x;
+	int dy = end.second - y;
 	
 	bool inverted = false;
 	
@@ -257,7 +258,7 @@ vector<Tile> Grid::GetLine(Tile start, Tile end)
 	
 	for(int i = 0; i<longest ; i++)
 	{
-		line.push_back(Tile(x,y));
+		line.push_back(std::make_pair(x,y));
 		//cout<<x<< " " << y <<"=>";
 		
 		if(inverted)
@@ -281,7 +282,7 @@ vector<Tile> Grid::GetLine(Tile start, Tile end)
 	return line;
 }
 
-void Grid::DrawCircle(Tile t, int r, int fill)
+void Grid::DrawCircle(std::pair<int, int> t, int r, Tile* fill)
 {
 	//cout<<"Drawing circle at point "<<t.x<<" "<<t.y<<" "<<"with radius "<<r<<std::endl;
 	for(int x = -r; x <=r ; x++)
@@ -290,8 +291,8 @@ void Grid::DrawCircle(Tile t, int r, int fill)
 		{
 			if(x*x + y*y <= r*r)
 			{
-				int mapX = t.x + x;
-				int mapY = t.y + y;
+				int mapX = t.first + x;
+				int mapY = t.second + y;
 				
 				if(InMapRange(mapX, mapY))
 				{
@@ -314,9 +315,10 @@ void Grid::LoadFloor()
 	LoadFloor(s);
 }
 
+//how floors are loaded and serialized will depend on the project tbh
 void Grid::LoadFloor(string path)
 {
-	std::ifstream file;
+	/*std::ifstream file;
 	file.open(path.c_str());
 	
 	string line;
@@ -341,17 +343,6 @@ void Grid::LoadFloor(string path)
 		_map.push_back(col);
 	}
 	
-	/*for(int i = 0 ; i < _map.size(); i++)
-	{
-		for(int j = 0 ; j < _map[i].size(); j++)
-		{
-			cout<<_map[i][j];
-		}
-		cout<<std::endl;
-	}
-	
-	cout<<"Finished printing"<<std::endl;*/
-	
 	_width = _map.size();
 	
 	if(_width > 0)
@@ -362,6 +353,7 @@ void Grid::LoadFloor(string path)
 	file.close();
 	
 	cout<<"Finished reading"<<std::endl;
+	*/
 }
 
 void Grid::SaveFloor()
@@ -373,9 +365,10 @@ void Grid::SaveFloor()
 	SaveFloor(s);
 }
 
+//how floors are loaded and serialized will depend on the project tbh
 void Grid::SaveFloor(string path)
 {
-	std::ofstream file;
+	/*std::ofstream file;
 	file.open(path.c_str());
 	
 	if(!file.is_open())
@@ -390,19 +383,12 @@ void Grid::SaveFloor(string path)
 		file << '\n';
 	}
 	file.close();
+	*/
 }
 
-void Grid::ImportFloor(float* grid, int width, int height)
+void Grid::ImportFloor(Tile** grid, int width, int height)
 {
-	_map.clear();
-	_width = width;
-	_height = height;
-	
-	for(int i = 0; i < _width; i++)
-	{
-		vector<int>tmp(_height);
-		_map.push_back(tmp);
-	}
+	Clear();
 
 	for(int x = 0; x < width; x++)
 	{
@@ -415,9 +401,9 @@ void Grid::ImportFloor(float* grid, int width, int height)
 	cout<<"Done importing floor"<<std::endl;
 }
 
-float* Grid::ExportFloor()
+Tile** Grid::ExportFloor()
 {
-	float* output = new float[ _width * _height ];
+	Tile** output = new Tile*[ _width * _height ];
 
 	for(int x = 0; x < _width; x++)
 	{
@@ -429,3 +415,5 @@ float* Grid::ExportFloor()
 
 	return output;
 }
+
+#pragma endregion GRID_METHODS

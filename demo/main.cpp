@@ -31,7 +31,7 @@ void DrawStyleMap(Grid* t)
 	{
 		for(int j = 0 ; j < t->_map[i].size(); j++)
 		{
-			if((t->_map[i][j] == 0 || t->_map[i][j] == 2))
+			if((t->_map[i][j] == &numtiles[0] || t->_map[i][j] == &numtiles[2]))
 			{
 				cout<<".";
 			}
@@ -51,11 +51,13 @@ void DrawStyleOutlineMap(Grid* t)
 		//cout<<i<<" "<<test->_map[i].size()<<std::endl;
 		for(int j = 0 ; j < t->_map[i].size(); j++)
 		{
-			if((t->_map[i][j] == 0 || t->_map[i][j] == 2) && t->IsOutlineTile(i, j))
+			if((t->_map[i][j] == &numtiles[0] || 
+				t->_map[i][j] == &numtiles[2]) && 
+					t->IsOutlineTile(i, j, &numtiles[0]))
 			{
 				cout<<"x";
 			}
-			else if((t->_map[i][j] == 0 || t->_map[i][j] == 2))
+			else if((t->_map[i][j] == &numtiles[0] || t->_map[i][j] == &numtiles[2]))
 			{
 				cout<<".";
 			}
@@ -122,15 +124,16 @@ int main(int argx, char*argv[])
 	organic = AP.Get<bool>("organic");
 	dense = AP.Get<bool>("dense");
 
-	RoomSystem RC;
-	MapSystem MC;
+	// RoomSystem RC;
+	// MapSystem MC;
 
-	MC.setPerlin(true);
+	MapGenerator Generator;
 	
 	/*Grid* test = 
 		new Grid(dimensions[0], dimensions[1], fillPercentage, rs, connect);*/
 	
-	Grid* test = new Grid(dimensions[0], dimensions[1]);
+	// Grid* test = new Grid(dimensions[0], dimensions[1]);
+	Grid* test;
 
 	if(AP.IsSet("fillpercentage"))
 		fillPercentage = AP.Get<int>("fillpercentage");
@@ -140,11 +143,18 @@ int main(int argx, char*argv[])
 	//inorganic dungeon
 	if( !organic )
 	{
-		RC.Generate(test, fillPercentage, dense);
+		test = 
+			Generator.GenerateRoom(
+				dimensions[0], dimensions[1], fillPercentage, true, -1, -1, 4);
+		// RC.Generate(test, fillPercentage, dense);
 	}
 	else
 	{
-		MC.Generate(test, fillPercentage, rs, 0, smoothing, connect);
+		test = Generator.GenerateOrganic(
+			dimensions[0], dimensions[1], fillPercentage, rs, 
+			0, smoothing, connect
+		);
+		// MC.Generate(test, fillPercentage, rs, 0, smoothing, connect);
 	}
 	
 		
@@ -165,11 +175,19 @@ int main(int argx, char*argv[])
 		{
 			case 0:
 				if (organic)
-					MC.Generate(test, fillPercentage, rs, 0, smoothing, connect);
+				{
+					Generator.GenerateOrganic(
+						dimensions[0], dimensions[1], fillPercentage, rs, 
+						0, smoothing, connect
+					);
+					// MC.Generate(test, fillPercentage, rs, 0, smoothing, connect);
+				}
 				else
 				{
-					test->Clear();
-					RC.Generate(test, fillPercentage, dense);
+					// test->Clear();
+					// RC.Generate(test, fillPercentage, dense);
+					Generator.GenerateRoom(
+					dimensions[0], dimensions[1], fillPercentage, true, -1, -1, 4, test);
 				}
 				cout<<(*test)<<std::endl;
 			break;
@@ -197,7 +215,8 @@ int main(int argx, char*argv[])
 			break;
 				
 			case 5:
-				MC.ProcessRooms(test, 9, 3, 1);
+				// MC.ProcessRooms(test, 9, 3, 1);
+				Generator.ProcessRooms();
 				cout<<(*test)<<std::endl;
 			break;
 

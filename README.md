@@ -23,7 +23,7 @@ make
 or enter ./src
 
 ```
-g++ -c -fPIC Grid.cpp -o grid.o
+g++ -c -fPIC grid.cpp -o grid.o -I../include -std=c++11
 g++ -c -fPIC MapGenerator.cpp perlin_noise.cpp -o MapGenerator.o
 ar rcs libMapGenerator.a MapGenerator.o
 ar rcs libGrid.a Grid.o

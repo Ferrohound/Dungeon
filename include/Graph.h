@@ -8,8 +8,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <algorithm> /* for std::find, std::sort */
-#include <queue>          // std::queue
+#include <algorithm>		/* for std::find, std::sort */
+#include <queue>			// std::queue
 //for MST
 #include <map>
 #include <bits/stdc++.h>  //for INT_MAX
