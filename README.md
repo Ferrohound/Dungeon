@@ -14,7 +14,7 @@ I highly recommend you take a look at those!
 
 ## Compilation
 
-Example compilation using MSYS2 MinGW-w64 (note that you need to use the mingw built cmake for the below to work)
+Example compilation using MSYS2 MinGW-w64 (note that you need to use the mingw built cmake for the below to work!)
 ```
 cmake . -G "MSYS Makefiles" -D build_demo=TRUE
 make
