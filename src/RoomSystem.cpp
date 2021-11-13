@@ -5,7 +5,7 @@
 //get average wall value should probably be a separate function to the grid
 //get each tile's x,y position and set its height to the average of the surrounding
 //tiles.
-void SmoothRoom(Grid* grid, Room* room, int radius)
+void SmoothRoom(Grid* grid, Region* room, int radius)
 {
 	int avg = 0;
 	for(int k = 0; k < room->tiles.size(); k++)
@@ -268,7 +268,7 @@ void RoomSystem::AddEdgesToFloor(Grid* grid, vector< Edge<RoomNode> >& edges)
 {
 	for(auto& edge : edges)
 	{
-		ConnectRooms(grid, edge.to->data->GetRoom(),
+		ConnectRegions(grid, edge.to->data->GetRoom(),
 		edge.from->data->GetRoom(), true, _fill);
 	}
 }
@@ -277,12 +277,12 @@ void RoomSystem::AddEdgesToFloor(Grid* grid, vector< Edge<RoomNode> >& edges)
 //need to create room then add it to the floor
 void RoomSystem::AddRoomToFloor(Grid* grid, RoomNode* room)
 {
-	Room* rm;
+	Region* rm;
 	vec2 pos = room->GetPosition();
-	rm = new Room(pos.x, pos.y, room->GetSize(), room->GetSize(), grid->_map, _fill);
+	rm = new Region(pos.x, pos.y, room->GetSize(), room->GetSize(), grid->_map, _fill);
 
 	room->SetRoom(rm);
 
-	AddRoom( grid, room->GetRoom(), _fill );
+	AddRegion( grid, room->GetRoom(), _fill );
 }
 #pragma endregion rs_methods

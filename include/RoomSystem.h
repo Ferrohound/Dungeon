@@ -57,7 +57,7 @@ using std::queue;
 //external helper functions inside of MapGenerator
 extern void RandomFillMap(Grid* grid, bool useRandomSeed, int seed, int fillPercentage, bool debug);
 extern void PerlinFillMap(Grid* grid, int seed);
-extern void SmoothRoom(Grid* grid, Room* room, int radius);
+extern void SmoothRoom(Grid* grid, Region* room, int radius);
 
 //=================================================================================
 // To simulate physics to place the rooms
@@ -72,12 +72,12 @@ class RoomNode
 		vec2 GetPosition() { return _pos; }
 		void SetPosition(vec2 newpos) { _pos = newpos; }
 
-		Room* GetRoom() {return _r;}
-		void SetRoom(Room* r) { _r = r; }
+		Region* GetRoom() {return _r;}
+		void SetRoom(Region* r) { _r = r; }
 	private:
 		float _size;
 		vec2 _pos;
-		Room* _r;
+		Region* _r;
 };
 
 
@@ -115,4 +115,4 @@ class RoomSystem
 		Grid* _grid;
 };
 
-extern void SmoothRoom(Grid* grid, Room* room, int radius);
+extern void SmoothRoom(Grid* grid, Region* room, int radius);

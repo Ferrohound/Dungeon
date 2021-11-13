@@ -49,7 +49,7 @@ using std::queue;
 //external helper functions inside of MapGenerator
 extern void RandomFillMap(Grid* grid, bool useRandomSeed, int seed, int fillPercentage, bool debug);
 extern void PerlinFillMap(Grid* grid, int seed);
-extern void SmoothRoom(Grid* grid, Room* room, int radius);
+extern void SmoothRoom(Grid* grid, Region* room, int radius);
 
 //======================================================================
 //To create a map
@@ -72,7 +72,7 @@ class MapSystem
 		//modify rooms to make them more mountainous, etc..
 		void ProcessRooms(Grid* grid, int max = 1, int min = 1, int smoothing = 1);
 		
-		void ConnectClosestRooms(Grid* grid, vector<Room*> rooms, bool forceAccessibility = false);
+		void ConnectClosestRooms(Grid* grid, vector<Region*> rooms, bool forceAccessibility = false);
 		//void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular = false, int fill = 2);
 		//void CreatePassage(Grid* grid, Room* A, Room* B, Tile tA, Tile tB, int fill = 2);
 		//void DrawCircle(Grid* grid, Tile t, int r, int fill = 2);
@@ -81,8 +81,8 @@ class MapSystem
 
 
 	private:
-		std::vector< Room* > _rooms;
-		std::vector< Room* > _spaces;
+		std::vector< Region* > _rooms;
+		std::vector< Region* > _spaces;
 		bool debug, perlin;
 		Grid* _grid;
 		NumTile* _tiles;

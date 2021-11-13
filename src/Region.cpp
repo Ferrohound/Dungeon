@@ -68,10 +68,10 @@ vector<std::pair<int, int>> GetLine(std::pair<int, int> start, std::pair<int, in
 	return line;
 }
 
-void CreatePassage(Grid* grid, Room* A, Room* B, std::pair<int, int> tA, std::pair<int, int> tB, Tile* fill)
+void CreatePassage(Grid* grid, Region* A, Region* B, std::pair<int, int> tA, std::pair<int, int> tB, Tile* fill)
 {
 	//cout<<"Creating Passage"<<std::endl;
-	Room::ConnectRooms(A, B);
+	Region::ConnectRegions(A, B);
 	
 	vector<std::pair<int, int>> line = GetLine(tA, tB);
 	
@@ -84,7 +84,7 @@ void CreatePassage(Grid* grid, Room* A, Room* B, std::pair<int, int> tA, std::pa
 }
 
 
-void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular, Tile* fill)
+void ConnectRegions(Grid* grid, Region* A, Region* B, bool angular, Tile* fill)
 {
 	int lowestD = (int) (pow((A->border[0].first - B->border[0].first), 2) +
 		(pow((A->border[0].second - B->border[0].second), 2)));
@@ -133,7 +133,7 @@ void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular, Tile* fill)
 			DrawCircle(grid, line2[i], 1, fill);
 		}
 
-		Room::ConnectRooms(A, B);
+		Region::ConnectRegions(A, B);
 
 	}
 	//otherwise, follow gradient
@@ -145,33 +145,33 @@ void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular, Tile* fill)
 
 //================= to do =======================
 //just iterate over the tiles and draw them
-void AddRoom(Grid* grid, Room* room, Tile* fill)
+void AddRegion(Grid* grid, Region* Region, Tile* fill)
 {
-	for (auto& tile : room->tiles)
+	for (auto& tile : Region->tiles)
 	{
 		
 		if(grid->InMapRange(tile.first, tile.second))
 			grid->_map[tile.first][tile.second] = fill;
 	}
 	//might relocate this to the system itself
-	//_rooms.push_back(room);
+	//_Regions.push_back(Region);
 }
 #pragma endregion helper_functions
 
-#pragma region room_methods
-//======================ROOM METHODS==================================
+#pragma region Region_methods
+//======================Region METHODS==================================
 
-Room::Room()
+Region::Region()
 {
 	accessible = false;
-	mainRoom = false;
+	mainRegion = false;
 
 	size = tiles.size();
-	connectedRooms.clear();
+	connectedRegions.clear();
 	border.clear();
 }
 
-Room::Room(int x, int y, int width, int height, vector< vector<Tile*> > map, Tile* fill )
+Region::Region(int x, int y, int width, int height, vector< vector<Tile*> > map, Tile* fill )
 {
 	tiles.clear();
 	
@@ -188,10 +188,10 @@ Room::Room(int x, int y, int width, int height, vector< vector<Tile*> > map, Til
 	mX = x + width/2;
 	mY = y + height/2;
 
-	//cout<<"Room midpoint is "<<mX<<" "<<mY<<std::endl;
+	//cout<<"Region midpoint is "<<mX<<" "<<mY<<std::endl;
 	
 	size = tiles.size();
-	connectedRooms.clear();
+	connectedRegions.clear();
 	border.clear();
 	
 	//create the border tiles list
@@ -210,16 +210,16 @@ Room::Room(int x, int y, int width, int height, vector< vector<Tile*> > map, Til
 	}
 }
 
-Room::Room(vector<std::pair<int, int>> _tiles, vector< vector<Tile*> > map, Tile* fill, int _id)
+Region::Region(vector<std::pair<int, int>> _tiles, vector< vector<Tile*> > map, Tile* fill, int _id)
 {
 	accessible = false;
-	mainRoom = false;
+	mainRegion = false;
 	
 	id = _id;
 	
 	tiles = _tiles;
 	size = tiles.size();
-	connectedRooms.clear();
+	connectedRegions.clear();
 	border.clear();
 	
 	//create the border tiles list
@@ -238,58 +238,58 @@ Room::Room(vector<std::pair<int, int>> _tiles, vector< vector<Tile*> > map, Tile
 	}
 }
 
-Room::~Room()
+Region::~Region()
 {
 	
 }
 
-void Room::SetAccessibleFromMainRoom()
+void Region::SetAccessibleFromMainRegion()
 {
 	if(!accessible)
 	{
 		accessible = true;
-		for(int i = 0; i < connectedRooms.size(); i++)
+		for(int i = 0; i < connectedRegions.size(); i++)
 		{
-			connectedRooms[i]->SetAccessibleFromMainRoom();
+			connectedRegions[i]->SetAccessibleFromMainRegion();
 		}
 	}
 }
 
-void Room::ConnectRooms(Room* A, Room* B)
+void Region::ConnectRegions(Region* A, Region* B)
 {
 	if(A->accessible)
 	{
-		B->SetAccessibleFromMainRoom();
+		B->SetAccessibleFromMainRegion();
 	}
 	if(B->accessible)
 	{
-		A->SetAccessibleFromMainRoom();
+		A->SetAccessibleFromMainRegion();
 	}
 	
-	A->connectedRooms.push_back(B);
-	B->connectedRooms.push_back(A);
+	A->connectedRegions.push_back(B);
+	B->connectedRegions.push_back(A);
 }
 
 //this is a direct connection
-bool Room::isConnected(Room* B)
+bool Region::isConnected(Region* B)
 {
-	for(int i = 0; i < connectedRooms.size(); i++)
+	for(int i = 0; i < connectedRegions.size(); i++)
 	{
-		if(connectedRooms[i]->id == B->id)
+		if(connectedRegions[i]->id == B->id)
 			return true;
 	}
-	//return (std::find(connectedRooms.begin(), connectedRooms.end(), B) != connectedRooms.end());
+	//return (std::find(connectedRegions.begin(), connectedRegions.end(), B) != connectedRegions.end());
 	return false;
 }
 
-int Room::CompareRooms(Room* A, Room* B)
+int Region::CompareRegions(Region* A, Region* B)
 {
 	return A->size < B->size;
 }
 
-bool Room::operator==(const Room &other) const 
+bool Region::operator==(const Region &other) const 
 {
 	return id == other.id;
 }
 
-#pragma endregion room_methods
+#pragma endregion Region_methods

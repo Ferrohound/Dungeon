@@ -91,7 +91,7 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 	
 	vector< vector<std::pair<int, int>> > wallRegions = 
 		grid->GetRegions(&_tiles[1], general_wall);
-	vector<Room*> remainingSpaces;
+	vector<Region*> remainingSpaces;
 		
 	//any region with less than threshold tiles, remove it
 	int wallThreshold = 4;
@@ -127,7 +127,7 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 		
 	//any region with less than threshold tiles, remove it
 	int roomThreshold = 4;
-	vector<Room*> remainingRooms;
+	vector<Region*> remainingRooms;
 	id = 0;
 	for(int i=0 ; i < roomRegions.size(); i++)
 	{
@@ -141,7 +141,7 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 		}
 		else
 		{
-			remainingRooms.push_back(new Room(roomRegions[i], grid->_map, &_tiles[1], id));
+			remainingRooms.push_back(new Region(roomRegions[i], grid->_map, &_tiles[1], id));
 			_rooms.push_back(remainingRooms[id]);
 			id++;
 		}
@@ -154,10 +154,10 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 	//error check this to make sure the room's aren't all eliminated
 	//remainingRooms.Sort();
 	
-	std::sort (remainingRooms.begin(), remainingRooms.end(), Room::CompareRooms);
+	std::sort (remainingRooms.begin(), remainingRooms.end(), Region::CompareRegions);
 	if(remainingRooms.size() > 0)
 	{
-		remainingRooms[0]->mainRoom = true;
+		remainingRooms[0]->mainRegion = true;
 		remainingRooms[0]->accessible = true;
 		if (debug)
 			cout<<"Biggest of the remaining rooms=> " << remainingRooms[0]->size<<std::endl;
@@ -169,19 +169,19 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 	cout<<"Done Processing"<<std::endl;
 }
 
-void MapSystem::ConnectClosestRooms(Grid* grid, vector<Room*> rooms, bool forceAccessibility)
+void MapSystem::ConnectClosestRooms(Grid* grid, vector<Region*> rooms, bool forceAccessibility)
 {
 	
 	//cout<<"Connecting rooms.."<<std::endl;
-	vector<Room*> roomListA;
-	vector<Room*> roomListB;
+	vector<Region*> roomListA;
+	vector<Region*> roomListB;
 
 	//separate the accessible rooms from the non-accessible ones		
 	if(forceAccessibility)
 	{
 		for(int i = 0; i < rooms.size(); i++)
 		{
-			Room* R = rooms[i];
+			Region* R = rooms[i];
 			if(R->accessible)
 			{
 				roomListB.push_back(R);
@@ -202,20 +202,20 @@ void MapSystem::ConnectClosestRooms(Grid* grid, vector<Room*> rooms, bool forceA
 	std::pair<int, int> bestTileA;
 	std::pair<int, int> bestTileB;
 	
-	Room* bestRoomA = new Room();
-	Room* bestRoomB = new Room();
+	Region* bestRoomA = new Region();
+	Region* bestRoomB = new Region();
 		
 	bool connectionFound = false;
 	
 	//go through every non-accessible room we have to work with
 	for(int i = 0; i < roomListA.size(); i++)
 	{
-		Room* A = roomListA[i];
+		Region* A = roomListA[i];
 
 		if(!forceAccessibility)
 		{
 			connectionFound = false;
-			if(A->connectedRooms.size() > 0)
+			if(A->connectedRegions.size() > 0)
 			{
 				continue;
 			}
@@ -224,7 +224,7 @@ void MapSystem::ConnectClosestRooms(Grid* grid, vector<Room*> rooms, bool forceA
 		//for every room that's accessible
 		for(int j = 0; j < roomListB.size(); j++)
 		{
-			Room* B = roomListB[j];
+			Region* B = roomListB[j];
 			
 			//if the room is itself or already connected, skip this one
 			if(A->id == B->id || A->isConnected(B))

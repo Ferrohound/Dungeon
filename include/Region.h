@@ -35,41 +35,34 @@ using std::string;
 using std::vector;
 using std::queue;
 
+//============================ REGION ============================================
+//eventually implement different shapes
 class Region{
 	public:
-
-	protected:
-};
-
-//============================ROOM============================================
-//rename to region?
-//eventually implement different shapes
-class Room{
-	public:
-		Room();
-		Room(int x, int y, int width, int height, vector< vector<Tile*> > map, Tile* fill);
-		Room(vector<std::pair<int, int>> _tiles, vector< vector<Tile*> > map, Tile* fill, int _id=-1);
-		~Room();
+		Region();
+		Region(int x, int y, int width, int height, vector< vector<Tile*> > map, Tile* fill);
+		Region(vector<std::pair<int, int>> _tiles, vector< vector<Tile*> > map, Tile* fill, int _id=-1);
+		~Region();
 		
 		//member functions
-		void SetAccessibleFromMainRoom();
-		bool isConnected(Room* A);
-		static int CompareRooms(Room* A, Room* B);
+		void SetAccessibleFromMainRegion();
+		bool isConnected(Region* A);
+		static int CompareRegions(Region* A, Region* B);
 		
-		bool operator==(const Room &other) const;
+		bool operator==(const Region &other) const;
 		
-		static void ConnectRooms(Room* A, Room* B);
+		static void ConnectRegions(Region* A, Region* B);
 		
 		
 		//member varialbes
 		vector<std::pair<int, int>> tiles;
 		vector<std::pair<int, int>> border;
 		Tile* tileType;
-		vector<Room*> connectedRooms;
+		vector<Region*> connectedRegions;
 		
 		int size;
 		int id;
-		bool mainRoom;
+		bool mainRegion;
 		bool accessible;
 
 		//to stop me from going crazy..
@@ -83,10 +76,10 @@ class Room{
 
 
 // Helper functions
-void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular, Tile* fill);
-void AddRoom(Grid* grid, Room* room, Tile* fill);
+void ConnectRegions(Grid* grid, Region* A, Region* B, bool angular, Tile* fill);
+void AddRegion(Grid* grid, Region* Region, Tile* fill);
 void DrawCircle(Grid* grid, std::pair<int, int> t, int r, Tile* fill);
 vector<std::pair<int, int>> GetLine(std::pair<int, int> start, std::pair<int, int> end);
-void CreatePassage(Grid* grid, Room* A, Room* B, std::pair<int, int> tA, std::pair<int, int> tB, Tile* fill);
+void CreatePassage(Grid* grid, Region* A, Region* B, std::pair<int, int> tA, std::pair<int, int> tB, Tile* fill);
 
 #endif
