@@ -216,7 +216,7 @@ int main(int argx, char*argv[])
 				
 			case 5:
 				// MC.ProcessRooms(test, 9, 3, 1);
-				Generator.ProcessRooms();
+				Generator.ProcessRooms(test, 9, 3, 1);
 				cout<<(*test)<<std::endl;
 			break;
 

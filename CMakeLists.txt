@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 2.8)
-project (DungeonGenerator)
+cmake_minimum_required (VERSION 2.8.12)
+project(DungeonGenerator)
 
 #set generator
 set(CMAKE_GENERATOR "MSYS Makefiles" CACHE INTERNAL "" #[[FORCE: sets it so that unless you use -G "makefile type" it defaults to this]])

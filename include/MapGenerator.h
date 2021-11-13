@@ -36,7 +36,7 @@ class MapGenerator{
 		Grid* GenerateRoom(
 			int width, int height, int fillPercentage,
 			bool dense, int minS, int maxS, int numSteps, Grid* grid = NULL);
-		void ProcessRooms();
+		void ProcessRooms(Grid* grid, int max = 1, int min = 1, int smoothing = 1);
 	private:
 		Grid* CreateGrid(int width, int height);
 		NumTileFactory factory;

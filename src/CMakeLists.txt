@@ -1,18 +1,19 @@
 #Create three libraries, one called Grid, one called Generators and one called MapGenerator
 # our src files
-SET(MAPGEN_SRC
-    MapGenerator.cpp
-    Region.cpp 
-    MapSystem.cpp
-    RoomSystem.cpp
-    perlin_noise.cpp
-)
+# SET(MAPGEN_SRC
+#     MapGenerator.cpp
+#     Region.cpp 
+#     NumTile.cpp
+#     MapSystem.cpp
+#     RoomSystem.cpp
+#     perlin_noise.cpp
+# )
 
 add_library(Grid STATIC Grid.cpp)
 #perlin_noise.cpp should probably be moved, but i'm not sure where to right now...
 
 # add_library(MapGenerator STATIC MapGenerator.cpp perlin_noise.cpp)
-add_library(Generators STATIC MAPGEN_SRC)
+add_library(Generators STATIC MapGenerator.cpp Region.cpp NumTile.cpp MapSystem.cpp RoomSystem.cpp perlin_noise.cpp)
 
 target_link_libraries(Generators Grid)
 

@@ -14,7 +14,7 @@ I highly recommend you take a look at those!
 
 ## Compilation
 
-Example compilation using MSYS2 MinGW-w64
+Example compilation using MSYS2 MinGW-w64 (note that you need to use the mingw built cmake for the below to work)
 ```
 cmake . -G "MSYS Makefiles" -D build_demo=TRUE
 make
@@ -24,9 +24,10 @@ or enter ./src
 
 ```
 g++ -c -fPIC grid.cpp -o grid.o -I../include -std=c++11
-g++ -c -fPIC MapGenerator.cpp perlin_noise.cpp -o MapGenerator.o
-ar rcs libMapGenerator.a MapGenerator.o
 ar rcs libGrid.a Grid.o
+g++ -c -fPIC MapGenerator.cpp perlin_noise.cpp -o MapGenerator.o
+g++ -fPIC MapGenerator.cpp perlin_noise.cpp Region.cpp MapSystem.cpp RoomSystem cpp NumTile.cpp -I../include -o generators.o -std=c++11
+ar rcs libMapGenerator.a MapGenerator.o
 ```
 
 enter ./demo
