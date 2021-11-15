@@ -20,7 +20,11 @@ void MapSystem::Generate(Grid* grid, int fillPercentage, bool useRandomSeed, int
 	}*/
 	
 	if(!perlin)
+	{
+		//cout<<"Random Fill"<<std::endl;
 		RandomFillMap(grid, useRandomSeed, seed, fillPercentage, debug);
+		// cout<<*grid;
+	}
 	else
 	{
 		PerlinFillMap(grid, seed);
@@ -31,6 +35,8 @@ void MapSystem::Generate(Grid* grid, int fillPercentage, bool useRandomSeed, int
 	{
 		SmoothMap( grid );
 	}
+
+	// cout<<*grid;
 	
 	ProcessMap(grid, connect);
 	
@@ -54,7 +60,7 @@ void MapSystem::SmoothMap(Grid* grid)
 			
 			else if(neighbors < 4)
 			{
-				grid->_map[x][y] = 0;
+				grid->_map[x][y] = &_tiles[0];
 			}
 		}
 	}
@@ -68,30 +74,36 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 	cout<<"Processing"<<std::endl;
 
 	//lambda to group all tiles with > 0 as a wall
-	auto general_wall = [](Tile* A, Tile* B) -> bool {
+	bool (*general_wall)(const Tile* A, const Tile* B) = NULL;
+	// auto general_wall = [](const Tile* A, const Tile* B) -> bool {
 
-			NumTile* a = (NumTile*)A;
-			NumTile* b = (NumTile*)B;
+	// 		NumTile* a = (NumTile*)A;
+	// 		NumTile* b = (NumTile*)B;
 
-			if(a->value > 0)
-			{
-				if(b->value > 0)
-					return true;
-				else
-					return false;
-			}
-			else
-			{
-				if(b->value == 0)
-					return true;
-				else
-					return false;
-			}
-		};
+	// 		//for the flood fill, if our main tile A is a wall, then any value > 0 should be included
+	// 		if(a->value > 0)
+	// 		{
+	// 			if(b->value > 0)
+	// 				return true;
+	// 			else
+	// 				return false;
+	// 		}
+	// 		//otherwise exclusively search for 0s
+	// 		else
+	// 		{
+	// 			if(b->value == 0)
+	// 				return true;
+	// 			else
+	// 				return false;
+	// 		}
+	// 	};
 	
-	vector< vector<std::pair<int, int>> > wallRegions = 
-		grid->GetRegions(&_tiles[1], general_wall);
-	vector<Region*> remainingSpaces;
+	cout<<"Getting regions."<<std::endl;
+
+	vector< vector<std::pair<int, int>> > wallRegions = grid->GetRegions(&_tiles[0], general_wall);
+	// vector<Region*> remainingSpaces;
+
+	cout<<"Regions attained."<<std::endl;
 		
 	//any region with less than threshold tiles, remove it
 	int wallThreshold = 4;
@@ -103,7 +115,8 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 			for(int j = 0; j < wallRegions[i].size(); j++)
 			{
 				std::pair<int, int> t = wallRegions[i][j];
-				grid->_map[t.first][t.second] = &_tiles[0];
+				//remember that 1 is space in this for some insane reason
+				grid->_map[t.first][t.second] = &_tiles[1];
 			}
 		}
 		
@@ -118,12 +131,14 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 		}
 	}
 	cout<<"Removed Walls"<<std::endl;
+
+	cout<<*grid;
 		
 	vector< vector<std::pair<int, int>> > roomRegions = 
 		grid->GetRegions(&_tiles[1], general_wall);
 	
-	if (debug)
-		cout<<"Initial number of rooms: "<<roomRegions.size() << std::endl;
+	// if (debug)
+	cout<<"Initial number of rooms: "<<roomRegions.size() << std::endl;
 		
 	//any region with less than threshold tiles, remove it
 	int roomThreshold = 4;
@@ -147,8 +162,8 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 		}
 	}
 	
-	if (debug)
-		cout<<"Removed "<<roomRegions.size() - remainingRooms.size() << " rooms." << std::endl;
+	// if (debug)
+	cout<<"Removed "<<roomRegions.size() - remainingRooms.size() << " rooms." << std::endl;
 
 		
 	//error check this to make sure the room's aren't all eliminated
@@ -159,7 +174,7 @@ void MapSystem::ProcessMap(Grid* grid, bool connect)
 	{
 		remainingRooms[0]->mainRegion = true;
 		remainingRooms[0]->accessible = true;
-		if (debug)
+		// if (debug)
 			cout<<"Biggest of the remaining rooms=> " << remainingRooms[0]->size<<std::endl;
 	}
 	

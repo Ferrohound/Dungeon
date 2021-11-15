@@ -2,7 +2,7 @@
 
 MapGenerator::MapGenerator()
 {
-	MC.setPerlin(true);
+	//MC.setPerlin(true);
 }
 
 MapGenerator::~MapGenerator()

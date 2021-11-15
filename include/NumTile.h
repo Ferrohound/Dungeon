@@ -10,11 +10,7 @@ struct NumTile: Tile{
 	NumTile(int _value) : value(_value) {} 
 	int value;
 
-	friend std::ostream &operator<<( std::ostream &output, const NumTile &T )
-	{
-		output<<T.value;
-		return output;
-	}
+	void print(std::ostream &output) const { output<<value; }
 };
 
 //https://stackoverflow.com/questions/633634/declaring-class-objects-in-a-header-file

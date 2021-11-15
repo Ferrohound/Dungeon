@@ -13,8 +13,7 @@ NumTile numtiles[] = {
 	NumTile(9),
 };
 
-//get how many walls surround a given position,
-//in this case "reference" refers to a wall tile
+//get how many walls immediately surround a given position
 int GetSurroundingWallCount(Grid* grid,int sx, int sy)
 {
 	int wallCount = 0;
@@ -32,11 +31,9 @@ int GetSurroundingWallCount(Grid* grid,int sx, int sy)
 			{
 				NumTile* t = (NumTile*)grid->_map[x][y];
 				if(t->value != 0)
+				{
 					wallCount++;
-				/*
-					rip this shortcut lol
-					wallCount+=_map[x][y];
-				*/
+				}
 			}
 		}
 		

@@ -74,8 +74,6 @@ Grid::~Grid()
 
 void Grid::Clear()
 {
-	cout<<"Clearing"<<std::endl;
-
 	// free all of the tiles
 	/*for(int x = 0; x < _width; x++)
 	{
@@ -98,7 +96,8 @@ void Grid::Clear()
 		_map.push_back(tmp);
 	}
 	
-	cout<<"Done Clearing"<<std::endl;
+	// cout<<"DEBUG"<<std::endl;
+	// cout<<*this;
 }
 
 //a tile is defined as an outline when any of the surrounding
@@ -124,33 +123,37 @@ bool Grid::IsOutlineTile(int x, int y, Tile* reference)
 }
 
 //floodfill to get all tiles in the region
-vector< std::pair<int, int> > Grid::GetRegionTiles(int sx, int sy,  bool (*compare)(Tile* A, Tile* B) )
+vector< std::pair<int, int> > Grid::GetRegionTiles(int sx, int sy,  bool (*compare)(const Tile* A, const Tile* B) )
 {
 	vector<std::pair<int, int>> tiles;
 
 	//https://en.cppreference.com/w/cpp/language/lambda
 	//if the compare function is null, just compare pointer values
-	if(compare == NULL)
-	{
-		compare = [](Tile* A, Tile* B) -> bool {
+	auto default_compare = [](const Tile* A, const Tile* B) -> bool {
 			if(A == B)
 				return true;
 			else
 				return false;
-		};
+	};
+	
+	if(compare == NULL)
+	{
+		cout<<"Compare function null"<<std::endl;
 	}
+
 		
 	//check if tile was looked at yet
 	//need to initialize each value, however, look at alternatives
-	vector< vector <int> > flags(_width);
+	vector< vector <int> > flags;
 	for(int i = 0; i < _width; i++)
 	{
-		vector<int> tmp(_height);
-		flags.push_back(tmp);
+		vector<int> tmp;
+		
 		for(int j = 0; j < _height; j++)
 		{
-			flags[i][j] = 0;
+			tmp.push_back(0);
 		}
+		flags.push_back(tmp);
 	}
 	
 	Tile* tileType = _map[sx][sy];
@@ -171,11 +174,24 @@ vector< std::pair<int, int> > Grid::GetRegionTiles(int sx, int sy,  bool (*compa
 		{
 			for(int y = t.second - 1; y <= t.second + 1; y++)
 			{
-				if(InMapRange(x, y) && (y == t.second || x == t.first) && flags[x][y] == 0 
-					&& compare(tileType, _map[x][y]) )
+				if(InMapRange(x, y) && (y == t.second || x == t.first) && flags[x][y] == 0 )
 				{
-					flags[x][y] = 1;
-					q.push(std::make_pair(x, y));
+					if(compare)
+					{
+						if(compare(tileType, _map[x][y]))
+						{
+							flags[x][y] = 1;
+							q.push(std::make_pair(x, y));
+						}
+					}
+					else
+					{
+						if(default_compare(tileType, _map[x][y]))
+						{
+							flags[x][y] = 1;
+							q.push(std::make_pair(x, y));
+						}
+					}
 				}
 			}
 		}
@@ -184,21 +200,33 @@ vector< std::pair<int, int> > Grid::GetRegionTiles(int sx, int sy,  bool (*compa
 	return tiles;
 }
 
-vector< vector<std::pair<int, int>> > Grid::GetRegions(Tile* tileType,  bool (*compare)(Tile* A, Tile* B) )
+vector< vector<std::pair<int, int>> > Grid::GetRegions(const Tile* tileType,  bool (*compare)(const Tile* A, const Tile* B) )
 {
-	//cout<<"Getting Regions"<<std::endl;
 	vector< vector<std::pair<int, int>> > regions;
+
+	auto default_compare = [](const Tile* A, const Tile* B) -> bool {
+			if(A == B)
+				return true;
+			else
+				return false;
+	};
+	
+	if(compare == NULL)
+	{
+		cout<<"Compare function null"<<std::endl;
+	}
 	
 	//flags to determine which tiles have already been visited
-	vector< vector <int> > flags(_width);
+	vector< vector <int> > flags;
 	for(int i = 0; i < _width; i++)
 	{
-		vector<int> tmp(_height);
-		flags.push_back(tmp);
+		vector<int> tmp;
+		
 		for(int j = 0; j < _height; j++)
 		{
-			flags[i][j] = 0;
+			tmp.push_back(0);
 		}
+		flags.push_back(tmp);
 	}
 	
 	//iterate over every tile, could optimize this fairly easily
@@ -207,20 +235,45 @@ vector< vector<std::pair<int, int>> > Grid::GetRegions(Tile* tileType,  bool (*c
 	{
 		for(int y = 0; y < _height; y++)
 		{
-			if(flags[x][y] == 0 && compare(_map[x][y], tileType) )
+			if(compare && compare(_map[x][y], tileType))
 			{
-				vector< std::pair<int, int> > newRegion = GetRegionTiles(x, y, compare);
-				regions.push_back(newRegion);
-				
-				for(int i = 0 ; i < newRegion.size(); i++)
+				if( flags[x][y] == 0 )
 				{
-					std::pair<int, int> t = newRegion[i];
-					flags[t.first][t.second] = 1;
+					//cout<<"getting region..."<<std::endl;
+					vector< std::pair<int, int> > newRegion = GetRegionTiles(x, y, compare);
+					//cout<<"got region"<<std::endl;
+					regions.push_back(newRegion);
+					
+					for(int i = 0 ; i < newRegion.size(); i++)
+					{
+						std::pair<int, int> t = newRegion[i];
+						flags[t.first][t.second] = 1;
+					}
 				}
 			}
+			else
+			{
+				if(default_compare(_map[x][y], tileType))
+				{
+					if( flags[x][y] == 0 )
+					{
+						//cout<<"getting region..."<<std::endl;
+						vector< std::pair<int, int> > newRegion = GetRegionTiles(x, y, compare);
+						//cout<<"got region"<<std::endl;
+						regions.push_back(newRegion);
+						
+						for(int i = 0 ; i < newRegion.size(); i++)
+						{
+							std::pair<int, int> t = newRegion[i];
+							flags[t.first][t.second] = 1;
+						}
+					}
+				}
+			}
+			
 		}
 	}
-	//cout<<"Done Getting " << regions.size()<<" Regions"<<std::endl;
+	cout<<"Done Getting " << regions.size()<<" Regions"<<std::endl;
 	return regions;
 }
 

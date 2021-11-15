@@ -35,12 +35,14 @@ struct Tile{
 	//Tile(Vector2 position);
 	~Tile();
 
+	virtual void print(std::ostream &output) const { output<<"<>"; }
+
 	//Vector2 pos;
 	// int x, y;
 
 	friend std::ostream &operator<<( std::ostream &output, const Tile &T )
 	{
-		output<<"<>";
+		T.print(output);
 		return output;
 	}
 };
@@ -58,8 +60,8 @@ class Grid{
 		bool InMapRange(int x, int y);
 
 		//get regions of the same type of tile using floodfill
-		vector< std::pair<int, int> > GetRegionTiles(int sx, int sy, bool (*compare)(Tile* A, Tile* B) = NULL);
-		vector< vector< std::pair<int, int>> > GetRegions (Tile* tileType,  bool (*compare)(Tile* A, Tile* B) = NULL);
+		vector< std::pair<int, int> > GetRegionTiles(int sx, int sy, bool (*compare)(const Tile* A, const Tile* B) = NULL);
+		vector< vector< std::pair<int, int>> > GetRegions (const Tile* tileType,  bool (*compare)(const Tile* A, const Tile* B) = NULL);
 		
 		//is the given position an outline tile (reference)
 		bool IsOutlineTile(int x, int y, Tile* reference);
@@ -94,7 +96,7 @@ class Grid{
 			{
 				for(int j = 0; j < F._height ; j++)
 				{
-					output << F._map[i][j];
+					output << *F._map[i][j];
 				}
 				output << '\n';
 			}
