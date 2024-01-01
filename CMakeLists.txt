@@ -8,6 +8,8 @@ set(CMAKE_GENERATOR "MSYS Makefiles" CACHE INTERNAL "" #[[FORCE: sets it so that
 set(build_demo TRUE CACHE BOOL "Build demo")
 set(library_dir ${CMAKE_CURRENT_SOURCE_DIR}/lib CACHE PATH "Where to put built libraries")
 
+set(DEBUG_BUILD TRUE CACHE BOOL "Debug Build")
+
 message( STATUS ${library_dir} )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${library_dir})
@@ -30,6 +32,11 @@ elseif (UNIX)
     #do something
 endif (UNIX)
 ]]
+
+# if we're in debug mode pass th(e g flag
+if(DEBUG_BUILD)
+    add_definitions( -g )
+endif()
 
 add_definitions( -std=c++11 )
 include_directories("include")

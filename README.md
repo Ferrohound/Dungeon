@@ -32,7 +32,7 @@ ar rcs libMapGenerator.a MapGenerator.o
 
 enter ./demo
 
-`g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11 -L../lib -lGrid -lMapGenerator`
+`g++ main.cpp MapGenerator.cpp -I include -o main.exe -std=c++11 -L../lib -lMapGenerator`
 ## Usage
 
 `main.exe --help`

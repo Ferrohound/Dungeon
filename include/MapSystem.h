@@ -1,7 +1,7 @@
 /*
 	MapSystem creates a more organic kind of map
 		First we fill thhe map up with a random amount of noise
-		
+
 		We then do several steps of smoothing by going through every tile
 		and changing its value based on what surrounds it
 
@@ -16,7 +16,7 @@
 
 		We then go about connecting the closest rooms via a recursive function that
 		takes the grid, a list of rooms and a bool asking whether or not to force
-		accessibility 
+		accessibility
 
 		initially our list of rooms is every other room we have and accessibility
 		is set to false
@@ -33,57 +33,66 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include "NumTile.h"
 #include "Graph.h"
+#include "Grid.h"
 #include "Region.h"
 #include "vec.h"
 
-using std::cout;
 using std::cin;
+using std::cout;
 using std::endl;
 
+using std::queue;
 using std::string;
 using std::vector;
-using std::queue;
 
-//external helper functions inside of MapGenerator
-extern void RandomFillMap(Grid* grid, bool useRandomSeed, int seed, int fillPercentage, bool debug);
-extern void PerlinFillMap(Grid* grid, int seed);
-extern void SmoothRoom(Grid* grid, Region* room, int radius);
+// external helper functions inside of MapGenerator
+extern void RandomFillMap(Grid<int> *grid, bool useRandomSeed, int seed, int fillPercentage, bool debug);
+
+extern void PerlinFillMap(Grid<int> *grid, int seed);
+
+extern void SmoothRoom(Grid<int> *grid, Region<int> *room, int radius);
 
 //======================================================================
-//To create a map
-
+// To create a map
 class MapSystem
 {
-	public:
-		MapSystem(NumTile* tiles) : _tiles(tiles) { debug = false; perlin = false;}
+public:
+	MapSystem(Cell<int> *tiles) : _tiles(tiles)
+	{
+		debug = false;
+		perlin = false;
+	}
 
-		void setDebug(bool newval) { debug = newval; }
-		void setPerlin(bool newval) { perlin = newval; }
-		
-		void Generate(Grid* grid, int fillPercentage = 30, bool useRandomSeed = true, int seed = 10, int smoothing = 2, bool connect = true);
+	void setDebug(bool newval) { debug = newval; }
+	void setPerlin(bool newval) { perlin = newval; }
 
-		//remove a wall or room region that is below a certain threshold and connect
-		//rooms
-		void ProcessMap(Grid* grid, bool connect = true);
-		void SmoothMap(Grid* grid);
-		
-		//modify rooms to make them more mountainous, etc..
-		void ProcessRooms(Grid* grid, int max = 1, int min = 1, int smoothing = 1);
-		
-		void ConnectClosestRooms(Grid* grid, vector<Region*> rooms, bool forceAccessibility = false);
-		//void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular = false, int fill = 2);
-		//void CreatePassage(Grid* grid, Room* A, Room* B, Tile tA, Tile tB, int fill = 2);
-		//void DrawCircle(Grid* grid, Tile t, int r, int fill = 2);
-		
-		//vector<Tile> GetLine(Tile start, Tile end);
+	Grid<int>* Generate(int width, int height, int fillPercentage = 30, bool useRandomSeed = true, int seed = 10, int smoothing = 2, bool connect = true);
 
+	// remove a wall or room region that is below a certain threshold and connect
+	// rooms
+	void ProcessMap(Grid<int> *grid, bool connect = true);
+	void SmoothMap(Grid<int> *grid);
 
-	private:
-		std::vector< Region* > _rooms;
-		std::vector< Region* > _spaces;
-		bool debug, perlin;
-		Grid* _grid;
-		NumTile* _tiles;
+	// modify rooms to make them more mountainous, etc..
+	void ProcessRooms(Grid<int> *grid, int max = 1, int min = 1, int smoothing = 1);
+
+	void ConnectClosestRooms(Grid<int> *grid, vector<Region<int> *> rooms, bool forceAccessibility = false);
+	// void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular = false, int fill = 2);
+	// void CreatePassage(Grid* grid, Room* A, Room* B, Tile tA, Tile tB, int fill = 2);
+	// void DrawCircle(Grid* grid, Tile t, int r, int fill = 2);
+
+	// vector<Tile> GetLine(Tile start, Tile end);
+
+private:
+	std::vector<Region<int> *> _rooms;
+	std::vector<Region<int> *> _spaces;
+	bool debug, perlin;
+	Grid<int> *_grid;
+	Cell<int> *_tiles;
+	Region<int> *_mainRegion;
+	std::unordered_map<Region<int>*, int> _regionAccesibility;
 };

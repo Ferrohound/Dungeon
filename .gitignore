@@ -19,7 +19,8 @@ $RECYCLE.BIN/
 
 # ignore visual studio code directory
 .vscode/
-build
+build/
+demo/
 *.o
 src/*.a
 

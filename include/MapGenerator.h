@@ -14,7 +14,7 @@
 #pragma once
 
 #include "MapSystem.h"
-#include "RoomSystem.h"
+#include "PseudoPhysics.h"
 #include "NumTile.h"
 
 using std::cout;
@@ -31,15 +31,15 @@ class MapGenerator{
 		MapGenerator();
 		~MapGenerator();
 
-		Grid* GenerateOrganic(int width, int height, int fillPercentage, 
-			bool useRandomSeed, int seed, int smoothing, bool connect, Grid* grid = NULL);
-		Grid* GenerateRoom(
+		Grid<int>* GenerateOrganic(int width, int height, int fillPercentage, 
+			bool useRandomSeed, int seed, int smoothing, bool connect, Grid<int>* grid = NULL);
+		Grid<int>* GenerateRoom(
 			int width, int height, int fillPercentage,
-			bool dense, int minS, int maxS, int numSteps, Grid* grid = NULL);
-		void ProcessRooms(Grid* grid, int max = 1, int min = 1, int smoothing = 1);
+			bool dense, int minS, int maxS, int numSteps, Grid<int>* grid = NULL);
+		void ProcessRooms(Grid<int>* grid, int max = 1, int min = 1, int smoothing = 1);
 	private:
-		Grid* CreateGrid(int width, int height);
-		NumTileFactory factory;
-		RoomSystem RC = RoomSystem(&numtiles[1], &numtiles[0]);
+		Grid<int>* CreateGrid(int width, int height);
+		NumTileFactory factory = NumTileFactory();
+		PhysicsSystem RC = PhysicsSystem();
 		MapSystem MC = MapSystem(numtiles);
 };

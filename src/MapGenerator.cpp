@@ -10,14 +10,14 @@ MapGenerator::~MapGenerator()
 
 }
 
-Grid* MapGenerator::CreateGrid(int width, int height)
+Grid<int>* MapGenerator::CreateGrid(int width, int height)
 {
-	Grid* out = new Grid(width, height, &factory);
+	Grid<int>* out = new Grid<int>(width, height, &factory);
 	return out;
 }
 
-Grid* MapGenerator::GenerateOrganic(int width, int height, int fillPercentage, 
-	bool useRandomSeed, int seed, int smoothing, bool connect, Grid* grid)
+Grid<int>* MapGenerator::GenerateOrganic(int width, int height, int fillPercentage, 
+	bool useRandomSeed, int seed, int smoothing, bool connect, Grid<int>* grid)
 {
 	//if grid is null, create it
 	if(!grid)
@@ -25,13 +25,11 @@ Grid* MapGenerator::GenerateOrganic(int width, int height, int fillPercentage,
 		grid = CreateGrid(width, height);
 	}
 
-	MC.Generate(grid, fillPercentage, useRandomSeed, seed, smoothing, connect);
-
-	return grid;
+	return MC.Generate(width, height, fillPercentage, useRandomSeed, seed, smoothing, connect);
 }
 
-Grid* MapGenerator::GenerateRoom(int width, int height, int fillPercentage,
-	bool dense, int minS, int maxS, int numSteps, Grid* grid)
+Grid<int>* MapGenerator::GenerateRoom(int width, int height, int fillPercentage,
+	bool dense, int minS, int maxS, int numSteps, Grid<int>* grid)
 {
 	//if grid is null, create it
 	if(!grid)
@@ -39,12 +37,10 @@ Grid* MapGenerator::GenerateRoom(int width, int height, int fillPercentage,
 		grid = CreateGrid(width, height);
 	}
 
-	RC.Generate(grid, fillPercentage, dense, minS, maxS, numSteps);
-
-	return grid;
+	return RC.Generate(width, height, fillPercentage, dense, minS, maxS, numSteps);
 }
 
-void MapGenerator::ProcessRooms(Grid* grid, int max, int min, int smoothing)
+void MapGenerator::ProcessRooms(Grid<int>* grid, int max, int min, int smoothing)
 {
 	MC.ProcessRooms(grid, max, min, smoothing);
 }

@@ -1,85 +1,152 @@
 /*
-	A region/room is simply a collection (typically the same type) of tiles 
-	(more accurately a collection of positions)
-
+	A region is simply a collection of Cells
 */
 
 #ifndef REGION_H
 #define REGION_H
 #pragma once
 
-#include <string.h>
-#include <string>
 #include <stdio.h>
-#include <stdlib.h>     /* srand, rand */
-#include <iostream>
-#include <fstream>
+#include <stdlib.h> /* srand, rand */
 #include <vector>
-#include <queue>
-#include <unordered_map>
-
-#include <cmath>
 #include <algorithm> /*std::find(vector.begin(), vector.end(), item)!=vector.end())*/
+#include <numeric> //accumulate
 
 #include <time.h>
-//#include <utility> /*std::pair, std::make_pair */
+// #include <utility> /*std::pair, std::make_pair */
 
-#include "Grid.h"
-#include "perlin_noise.h"
+#include "Cell.h"
 
-using std::cout;
-using std::cin;
-using std::endl;
-
-using std::string;
 using std::vector;
-using std::queue;
 
 //============================ REGION ============================================
-//eventually implement different shapes
-class Region{
-	public:
-		Region();
-		Region(int x, int y, int width, int height, vector< vector<Tile*> > map, Tile* fill);
-		Region(vector<std::pair<int, int>> _tiles, vector< vector<Tile*> > map, Tile* fill, int _id=-1);
-		~Region();
-		
-		//member functions
-		void SetAccessibleFromMainRegion();
-		bool isConnected(Region* A);
-		static int CompareRegions(Region* A, Region* B);
-		
-		bool operator==(const Region &other) const;
-		
-		static void ConnectRegions(Region* A, Region* B);
-		
-		
-		//member varialbes
-		vector<std::pair<int, int>> tiles;
-		vector<std::pair<int, int>> border;
-		Tile* tileType;
-		vector<Region*> connectedRegions;
-		
-		int size;
-		int id;
-		bool mainRegion;
-		bool accessible;
+// eventually implement different shapes
+template <typename T>
+struct Region
+{
+	Region();
+	Region(vector<Cell<T> *> fill, vector<Cell<T> *> border = vector<Cell<T> *>());
+	~Region();
 
-		//to stop me from going crazy..
-		//better struct later ============================ TO DO
-		int mX, mY;
-		
-	
-	private:
-		
+	// member functions
+	// void SetAccessibleFromMainRegion();
+	bool isConnected(Region *A);
+	static int CompareRegions(Region<T> *A, Region<T> *B);
+
+	void Fill(T fill)
+	{
+		for (Cell<T> *cell : cells)
+		{
+			cell->data = fill;
+		}
+	}
+
+	bool operator==(const Region<T> *other) const;
+
+	static void ConnectRegions(Region<T> *A, Region<T> *B);
+	static void SeparateRegions(Region<T> *A, Region<T> *B);
+
+	// member varialbes
+	vector<Cell<T> *> cells; // cells is all cells, border is a subset
+	vector<Cell<T> *> border;
+	vector<Region<T> *> connectedRegions;
+	int size, id, mX, mY, CoG;
 };
 
+// #include "Region.cpp"
 
-// Helper functions
-void ConnectRegions(Grid* grid, Region* A, Region* B, bool angular, Tile* fill);
-void AddRegion(Grid* grid, Region* Region, Tile* fill);
-void DrawCircle(Grid* grid, std::pair<int, int> t, int r, Tile* fill);
-vector<std::pair<int, int>> GetLine(std::pair<int, int> start, std::pair<int, int> end);
-void CreatePassage(Grid* grid, Region* A, Region* B, std::pair<int, int> tA, std::pair<int, int> tB, Tile* fill);
+#pragma region Region_methods
+//======================Region METHODS==================================
+
+template <typename T>
+Region<T>::Region()
+{
+	// accessible = false;
+	// mainRegion = false;
+
+	size = 0;
+	connectedRegions.clear();
+	border.clear();
+}
+
+template <typename T>
+Region<T>::Region(vector<Cell<T> *> fill, vector<Cell<T> *> border)
+{
+	cells = fill;
+	border = border;
+	size = cells.size();
+
+	auto lambda = [count = 0](double a, int b) mutable
+	{ return a + (b - a) / ++count; };
+
+	mX = std::accumulate(cells.begin(), cells.end(), 0,
+						 [](int partialSum, const Cell<T> *obj)
+						 {
+							 return partialSum + obj->pos.x;
+						 }) /
+		 size;
+
+	mY = std::accumulate(cells.begin(), cells.end(), 0,
+						 [](int partialSum, const Cell<T> *obj)
+						 {
+							 return partialSum + obj->pos.y;
+						 }) /
+		 size;
+
+	connectedRegions.clear();
+}
+
+template <typename T>
+Region<T>::~Region()
+{
+}
+
+template <typename T>
+void Region<T>::ConnectRegions(Region<T> *A, Region<T> *B)
+{
+	A->connectedRegions.push_back(B);
+	B->connectedRegions.push_back(A);
+}
+
+template <typename T>
+void Region<T>::SeparateRegions(Region<T> *A, Region<T> *B)
+{
+	vector<Region *> aFiltered;
+	std::copy_if(A->connectedRegions.begin(), A->connectedRegions.end(), std::back_inserter(aFiltered), [B](Region *i)
+				 { return i != B; });
+	A->connectedRegions = aFiltered;
+
+	vector<Region *> bFiltered;
+	std::copy_if(B->connectedRegions.begin(), B->connectedRegions.end(), std::back_inserter(bFiltered), [A](Region *i)
+				 { return i != A; });
+	B->connectedRegions = bFiltered;
+}
+
+// this is a direct connection
+template <typename T>
+bool Region<T>::isConnected(Region<T> *B)
+{
+	for (int i = 0; i < connectedRegions.size(); i++)
+	{
+		if (connectedRegions[i]->id == B->id)
+			return true;
+	}
+	// return (std::find(connectedRegions.begin(), connectedRegions.end(), B) != connectedRegions.end());
+	return false;
+}
+
+template <typename T>
+int Region<T>::CompareRegions(Region<T> *A, Region<T> *B)
+{
+	return A->size < B->size;
+}
+
+template <typename T>
+bool Region<T>::operator==(const Region<T> *other) const
+{
+	return this == other;
+}
+
+#pragma endregion Region_methods
 
 #endif
