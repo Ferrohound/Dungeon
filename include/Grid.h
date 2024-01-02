@@ -137,9 +137,9 @@ public:
 
 	void DrawCircle(vec2 t, int r, T fill);
 
-	void CreatePassage(Region<T> *A, Region<T> *B, Cell<T> *tA, Cell<T> *tB, T fill) ;
-	void CreatePassage(Region<T> *A, Region<T> *B, vec2 tA, vec2 tB, T fill);
-	void ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill);
+	vector<Cell<T> *> GetPassageCells(Cell<T> *tA, Cell<T> *tB);
+	vector<Cell<T> *> GetPassageCells(vec2 tA, vec2 tB);
+	Region<T> *ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill);
 
 	vector<vec2> GetLine(vec2 start, vec2 end);
 
@@ -158,6 +158,11 @@ public:
 	void Clear();
 
 	vector<vector<int>> GetMap();
+
+	Cell<T> *GetCell(vec2 pos) const
+	{
+		return GetCell(pos.x, pos.y);
+	}
 
 	Cell<T> *GetCell(int x, int y) const
 	{
@@ -205,29 +210,32 @@ private:
 // may remove these from the class and have these by themselves if useful enough
 
 template <typename T>
-void Grid<T>::CreatePassage(Region<T> *A, Region<T> *B, Cell<T> *tA, Cell<T> *tB, T fill)
+vector<Cell<T> *> Grid<T>::GetPassageCells(Cell<T> *tA, Cell<T> *tB)
 {
-	CreatePassage(A, B, tA->pos, tB->pos, fill);
+	return GetPassageCells(tA->pos, tB->pos);
 }
 
 template <typename T>
-void Grid<T>::CreatePassage(Region<T> *A, Region<T> *B, vec2 tA, vec2 tB, T fill)
+vector<Cell<T> *> Grid<T>::GetPassageCells(vec2 tA, vec2 tB)
 {
-	// cout<<"Creating Passage"<<std::endl;
-	Region<T>::ConnectRegions(A, B);
-
 	vector<vec2> line = GetLine(tA, tB);
+
+	vector<Cell<T> *> out;
 
 	for (int i = 0; i < line.size(); i++)
 	{
 		//===================================== TO DO
 		// editing a bit..
-		DrawCircle(line[i], 1, fill);
+		// DrawCircle(line[i], 1, fill);
+
+		out.push_back(GetCell(line[i]));
 	}
+
+	return out;
 }
 
 template <typename T>
-void Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill)
+Region<T> *Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill)
 {
 	int lowestD = (int)(pow((A->border[0]->pos.x - B->border[0]->pos.x), 2) +
 						(pow((A->border[0]->pos.y - B->border[0]->pos.y), 2)));
@@ -255,34 +263,44 @@ void Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill)
 		}
 	}
 
+	vector<Cell<T> *> regionTiles;
+
 	//==================================================== TO DO
 	// create an angular, maybe even jagged connection
 	if (angular)
 	{
-		// CreatePassage(A, B, bestCellA, bestCellB);
+		// GetPassageCells(A, B, bestCellA, bestCellB);
 		vec2 corner = {bestCellB.x, bestCellA.y};
-		vector<vec2> line1 = GetLine(bestCellA, corner);
-		vector<vec2> line2 = GetLine(corner, bestCellB);
+		vector<Cell<T> *> line1 = GetPassageCells(bestCellA, corner);
+		vector<Cell<T> *> line2 = GetPassageCells(corner, bestCellB);
 
-		for (int i = 0; i < line1.size(); i++)
-		{
-			//===================================== TO DO
-			DrawCircle(line1[i], 1, fill);
-		}
+		auto it = line2.begin();
 
-		for (int i = 0; i < line2.size(); i++)
-		{
-			//===================================== TO DO
-			DrawCircle(line2[i], 1, fill);
-		}
-
-		Region<T>::ConnectRegions(A, B);
+		regionTiles.reserve(line1.size() + line2.size()); // preallocate memory
+		regionTiles.insert(regionTiles.end(), line1.begin(), line1.end());
+		// corner will be duplicated so remove it
+		regionTiles.insert(regionTiles.end(), line2.begin()++, line2.end());
 	}
 	// otherwise, follow gradient
 	else
 	{
-		CreatePassage(A, B, bestCellA, bestCellB, fill);
+		vector<Cell<T> *> regionTiles = GetPassageCells(bestCellA, bestCellB);
+		// return GetPassageCells(A, B, bestCellA, bestCellB, fill);
 	}
+
+	for (Cell<T> *cell : regionTiles)
+	{
+		DrawCircle(cell->pos, 1, fill);
+	}
+
+	Region<T>::ConnectRegions(A, B);
+
+	Region<T> *out = new Region<T>(regionTiles);
+
+	Region<T>::ConnectRegions(out, A);
+	Region<T>::ConnectRegions(out, B);
+
+	return out;
 }
 
 #pragma endregion helper_functions
@@ -316,7 +334,13 @@ template <typename T>
 Grid<T>::~Grid()
 {
 	// calling vector clear calls the destructor for each element but not delete
-	// TODO: clear up memory
+	for (auto &row : _map)
+	{
+		for (Cell<T> *cell : row)
+		{
+			delete cell;
+		}
+	}
 }
 
 template <typename T>
@@ -375,12 +399,6 @@ bool Grid<T>::IsOutlineCell(int x, int y, Cell<T> *reference)
 	}
 	return false;
 }
-
-// template <typename T, size_t N>
-
-// template <typename T, size_t N>
-
-// template <typename T, size_t N>
 
 // floodfill to get all Cells in the region
 template <typename T>
@@ -633,46 +651,11 @@ void Grid<T>::LoadFloor()
 	LoadFloor(s);
 }
 
+// TODO: rewrite this
 // how floors are loaded and serialized will depend on the project tbh
 template <typename T>
 void Grid<T>::LoadFloor(string path)
 {
-	/*std::ifstream file;
-	file.open(path.c_str());
-
-	string line;
-	char l[100000];
-
-	if(!file.is_open())
-		return;
-
-	_map.clear();
-
-	while(getline (file, line))
-	{
-		strcpy(l,line.c_str());
-		vector<int> col;
-
-		for(int y = 0 ; y < strlen(l) ; y++)
-		{
-			col.push_back((l[y] - '0'));
-		}
-
-		//for now only read 0, 1
-		_map.push_back(col);
-	}
-
-	_width = _map.size();
-
-	if(_width > 0)
-		_height = _map[0].size();
-	else
-		_height = 0;
-
-	file.close();
-
-	cout<<"Finished reading"<<std::endl;
-	*/
 }
 
 template <typename T>
@@ -685,26 +668,12 @@ void Grid<T>::SaveFloor()
 	SaveFloor(s);
 }
 
+// TODO: rewrite this
 // how floors are loaded and serialized will depend on the project tbh
 template <typename T>
 void Grid<T>::SaveFloor(string path)
 {
-	/*std::ofstream file;
-	file.open(path.c_str());
-
-	if(!file.is_open())
-		return;
-
-	for(int i = 0; i < _width ; i++)
-	{
-		for(int j = 0; j < _height ; j++)
-		{
-			file << _map[i][j];
-		}
-		file << '\n';
-	}
-	file.close();
-	*/
+	
 }
 
 template <typename T>

@@ -31,14 +31,12 @@ class MapGenerator{
 		MapGenerator();
 		~MapGenerator();
 
-		Grid<int>* GenerateOrganic(int width, int height, int fillPercentage, 
-			bool useRandomSeed, int seed, int smoothing, bool connect, Grid<int>* grid = NULL);
-		Grid<int>* GenerateRoom(
-			int width, int height, int fillPercentage,
-			bool dense, int minS, int maxS, int numSteps, Grid<int>* grid = NULL);
-		void ProcessRooms(Grid<int>* grid, int max = 1, int min = 1, int smoothing = 1);
+		Grid<int>* GenerateOrganic(Floor<int>& floor, int fillPercentage, 
+			bool useRandomSeed, int seed, int smoothing, bool connect);
+		Grid<int>* GenerateRoom(Floor<int>& floor, int fillPercentage,
+			bool dense, int minS, int maxS, int numSteps);
+		void ProcessRooms(Floor<int>& floor, int max = 1, int min = 1, int smoothing = 1);
 	private:
-		Grid<int>* CreateGrid(int width, int height);
 		NumTileFactory factory = NumTileFactory();
 		PhysicsSystem RC = PhysicsSystem();
 		MapSystem MC = MapSystem(numtiles);

@@ -10,37 +10,29 @@ MapGenerator::~MapGenerator()
 
 }
 
-Grid<int>* MapGenerator::CreateGrid(int width, int height)
+Grid<int>* MapGenerator::GenerateOrganic(Floor<int>& floor, int fillPercentage, 
+	bool useRandomSeed, int seed, int smoothing, bool connect)
 {
-	Grid<int>* out = new Grid<int>(width, height, &factory);
-	return out;
+	// TODO: clean up the memory/type shenanigans
+	// floor.Reset();
+	// delete floor.grid;
+	floor.grid = MC.Generate(floor, floor.width, floor.height, fillPercentage, useRandomSeed, seed, smoothing, connect);
+
+	return floor.grid;
 }
 
-Grid<int>* MapGenerator::GenerateOrganic(int width, int height, int fillPercentage, 
-	bool useRandomSeed, int seed, int smoothing, bool connect, Grid<int>* grid)
+Grid<int>* MapGenerator::GenerateRoom(Floor<int>& floor, int fillPercentage,
+	bool dense, int minS, int maxS, int numSteps)
 {
-	//if grid is null, create it
-	if(!grid)
-	{
-		grid = CreateGrid(width, height);
-	}
+	// TODO: clean up memory/type shenanigans
+	// floor.Reset();
+	// delete floor.grid;
+	RC.Generate(floor.grid, fillPercentage, dense, minS, maxS, numSteps);
 
-	return MC.Generate(width, height, fillPercentage, useRandomSeed, seed, smoothing, connect);
+	return floor.grid;
 }
 
-Grid<int>* MapGenerator::GenerateRoom(int width, int height, int fillPercentage,
-	bool dense, int minS, int maxS, int numSteps, Grid<int>* grid)
-{
-	//if grid is null, create it
-	if(!grid)
-	{
-		grid = CreateGrid(width, height);
-	}
-
-	return RC.Generate(width, height, fillPercentage, dense, minS, maxS, numSteps);
-}
-
-void MapGenerator::ProcessRooms(Grid<int>* grid, int max, int min, int smoothing)
+void MapGenerator::ProcessRooms(Floor<int>& grid, int max, int min, int smoothing)
 {
 	MC.ProcessRooms(grid, max, min, smoothing);
 }

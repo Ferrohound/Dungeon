@@ -35,11 +35,8 @@
 
 #include <unordered_map>
 
+#include "Floor.h"
 #include "NumTile.h"
-#include "Graph.h"
-#include "Grid.h"
-#include "Region.h"
-#include "vec.h"
 
 using std::cin;
 using std::cout;
@@ -70,17 +67,17 @@ public:
 	void setDebug(bool newval) { debug = newval; }
 	void setPerlin(bool newval) { perlin = newval; }
 
-	Grid<int>* Generate(int width, int height, int fillPercentage = 30, bool useRandomSeed = true, int seed = 10, int smoothing = 2, bool connect = true);
+	Grid<int>* Generate(Floor<int>& floor, int width, int height, int fillPercentage = 30, bool useRandomSeed = true, int seed = 10, int smoothing = 2, bool connect = true);
 
 	// remove a wall or room region that is below a certain threshold and connect
 	// rooms
-	void ProcessMap(Grid<int> *grid, bool connect = true);
-	void SmoothMap(Grid<int> *grid);
+	void ProcessMap(Floor<int> &floor, bool connect = true);
+	void SmoothMap(Floor<int> &floor);
 
 	// modify rooms to make them more mountainous, etc..
-	void ProcessRooms(Grid<int> *grid, int max = 1, int min = 1, int smoothing = 1);
+	void ProcessRooms(Floor<int> &floor, int max = 1, int min = 1, int smoothing = 1);
 
-	void ConnectClosestRooms(Grid<int> *grid, vector<Region<int> *> rooms, bool forceAccessibility = false);
+	void ConnectClosestRooms(Floor<int> &floor, vector<Region<int> *> rooms, bool forceAccessibility = false);
 	// void ConnectRooms(Grid* grid, Room* A, Room* B, bool angular = false, int fill = 2);
 	// void CreatePassage(Grid* grid, Room* A, Room* B, Tile tA, Tile tB, int fill = 2);
 	// void DrawCircle(Grid* grid, Tile t, int r, int fill = 2);
@@ -88,11 +85,6 @@ public:
 	// vector<Tile> GetLine(Tile start, Tile end);
 
 private:
-	std::vector<Region<int> *> _rooms;
-	std::vector<Region<int> *> _spaces;
 	bool debug, perlin;
-	Grid<int> *_grid;
 	Cell<int> *_tiles;
-	Region<int> *_mainRegion;
-	std::unordered_map<Region<int>*, int> _regionAccesibility;
 };

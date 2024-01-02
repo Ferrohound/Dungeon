@@ -125,7 +125,10 @@ int main(int argx, char *argv[])
 	// MapSystem MC;
 
 	MapGenerator Generator;
-	Grid<int> *test;
+	NumTileFactory f;
+
+	Floor<int> floor = Floor<int>(dimensions[0], dimensions[1], &f);
+	Grid<int> *test = floor.grid;
 
 	if (AP.IsSet("fillpercentage"))
 		fillPercentage = AP.Get<int>("fillpercentage");
@@ -136,15 +139,13 @@ int main(int argx, char *argv[])
 	if (!organic)
 	{
 		test =
-			Generator.GenerateRoom(
-				dimensions[0], dimensions[1], fillPercentage, dense, -1, -1, 4);
+			Generator.GenerateRoom(floor, fillPercentage, dense, -1, -1, 4);
 		// RC.Generate(test, fillPercentage, dense);
 	}
 	else
 	{
-		test = Generator.GenerateOrganic(
-			dimensions[0], dimensions[1], fillPercentage, rs,
-			0, smoothing, connect);
+		test = Generator.GenerateOrganic(floor, fillPercentage, rs,
+										 0, smoothing, connect);
 		// MC.Generate(test, fillPercentage, rs, 0, smoothing, connect);
 	}
 
@@ -166,17 +167,16 @@ int main(int argx, char *argv[])
 		case 0:
 			if (organic)
 			{
-				test = Generator.GenerateOrganic(
-					dimensions[0], dimensions[1], fillPercentage, rs,
-					0, smoothing, connect);
+				test = Generator.GenerateOrganic(floor, fillPercentage, rs,
+												 0, smoothing, connect);
 				// MC.Generate(test, fillPercentage, rs, 0, smoothing, connect);
 			}
 			else
 			{
 				// test->Clear();
 				// RC.Generate(test, fillPercentage, dense);
-				test = Generator.GenerateRoom(
-					dimensions[0], dimensions[1], fillPercentage, dense, -1, -1, 4, test);
+				test = Generator.GenerateRoom(floor,
+											  fillPercentage, dense, -1, -1, 4);
 			}
 			cout << (*test) << std::endl;
 			break;
@@ -205,7 +205,7 @@ int main(int argx, char *argv[])
 
 		case 5:
 			// MC.ProcessRooms(test, 9, 3, 1);
-			Generator.ProcessRooms(test, 9, 3, 1);
+			Generator.ProcessRooms(floor, 9, 3, 1);
 			cout << (*test) << std::endl;
 			break;
 
