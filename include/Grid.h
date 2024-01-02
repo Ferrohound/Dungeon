@@ -63,7 +63,7 @@ public:
 
 	~Grid();
 
-	bool InMapRange(int x, int y);
+	bool InMapRange(int x, int y) const;
 
 	// get regions of the same type of Cell using floodfill
 	vector<vec2> GetRegionCells(int sx, int sy, bool (*compare)(const T A, const T B) = NULL);
@@ -125,7 +125,10 @@ public:
 			{
 				for (int y = region[i].y - 1; y < region[i].y + 1; y++)
 				{
-					if ((x == region[i].x || y == region[i].y) && std::find(regionContents, regionContents + N, _map[x][y]->data) != regionContents + N)
+					auto cell = GetCell(x, y);
+					if (cell == NULL)
+						continue;
+					if ((x == region[i].x || y == region[i].y) && std::find(regionContents, regionContents + N,cell->data) != regionContents + N)
 					{
 						border.push_back(_map[x][y]);
 					}
@@ -166,7 +169,9 @@ public:
 
 	Cell<T> *GetCell(int x, int y) const
 	{
-		return _map[x][y];
+		if (InMapRange(x, y))
+			return _map[x][y];
+		return NULL;
 	}
 
 	vector<Cell<T> *> GetCells(vector<vec2> positions)
@@ -199,10 +204,10 @@ public:
 
 	std::vector<vector<Cell<T> *>> _map;
 	bool debug;
+	CellFactory<T> *_factory;
 
 private:
 	int _width, _height;
-	CellFactory<T> *_factory;
 };
 
 #pragma region helper_functions
@@ -265,7 +270,7 @@ Region<T> *Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T f
 
 	vector<Cell<T> *> regionTiles;
 
-	//==================================================== TO DO
+	// TODO: regionTiles shouldn't be empty but sometimes it is, look into this
 	// create an angular, maybe even jagged connection
 	if (angular)
 	{
@@ -288,6 +293,9 @@ Region<T> *Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T f
 		// return GetPassageCells(A, B, bestCellA, bestCellB, fill);
 	}
 
+	if (regionTiles.size() == 0)
+		return NULL;
+
 	for (Cell<T> *cell : regionTiles)
 	{
 		DrawCircle(cell->pos, 1, fill);
@@ -308,7 +316,7 @@ Region<T> *Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T f
 #pragma region GRID_METHODS
 //========================GRID METHODS================================
 template <typename T>
-bool Grid<T>::InMapRange(int x, int y)
+bool Grid<T>::InMapRange(int x, int y) const
 {
 	return x >= 0 && x < _width && y >= 0 && y < _height;
 }
@@ -673,7 +681,6 @@ void Grid<T>::SaveFloor()
 template <typename T>
 void Grid<T>::SaveFloor(string path)
 {
-	
 }
 
 template <typename T>

@@ -3,55 +3,65 @@
 #pragma region ms_methods
 //========================MAP SYSTEM METHODS================================
 
+Floor<int> *MapSystem::Generate(int width, int height, int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect)
+{
+	NumTileFactory* f = new NumTileFactory();
+	Floor<int> *out = new Floor<int>(width, height, f);
+
+	Generate(out, fillPercentage, useRandomSeed, seed, smoothing, connect);
+
+	return out;
+}
+
 // create a floor with the given dimensions and fillPercentage
 // randomly generate a room given a fillPercentage, a seed and how much smoothing to use
-Grid<int>* MapSystem::Generate(Floor<int>& floor, int width, int height, int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect)
+void MapSystem::Generate(Floor<int> *floor, int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect)
 {
 	cout << "Generating" << std::endl;
+
+	floor->Reset();
 
 	if (!perlin)
 	{
 		// cout<<"Random Fill"<<std::endl;
-		RandomFillMap(floor.grid, useRandomSeed, seed, fillPercentage, debug);
+		RandomFillMap(floor->grid, useRandomSeed, seed, fillPercentage, debug);
 		// cout<<*grid;
 	}
 	else
 	{
-		PerlinFillMap(floor.grid, seed);
+		PerlinFillMap(floor->grid, seed);
 	}
 
 	for (int i = 0; i < smoothing; i++)
 	{
-		SmoothMap(floor);
+		SmoothMap(floor->grid);
 	}
 
 	// cout<<*grid;
 
-	ProcessMap(floor, connect);
+	ProcessMap(*floor, connect);
 
 	cout << "Done Generating" << std::endl;
-
-	return floor.grid;
 }
 
 // cellular automita; change tile value based on what surrounds it
-void MapSystem::SmoothMap(Floor<int> &floor)
+void MapSystem::SmoothMap(Grid<int> *grid)
 {
 	// cout<<"smoothing"<<std::endl;
-	for (int x = 0; x < floor.width; x++)
+	for (int x = 0; x < grid->GetWidth(); x++)
 	{
-		for (int y = 0; y < floor.height; y++)
+		for (int y = 0; y < grid->GetHeight(); y++)
 		{
-			int neighbors = GetSurroundingWallCount(floor.grid, x, y);
+			int neighbors = GetSurroundingWallCount(grid, x, y);
 
 			if (neighbors > 4)
 			{
-				floor.grid->_map[x][y]->data = _tiles[1].data;
+				grid->_map[x][y]->data = _tiles[1].data;
 			}
 
 			else if (neighbors < 4)
 			{
-				floor.grid->_map[x][y]->data = _tiles[0].data;
+				grid->_map[x][y]->data = _tiles[0].data;
 			}
 		}
 	}
@@ -250,7 +260,7 @@ void MapSystem::ConnectClosestRooms(Floor<int> &floor, vector<Region<int> *> roo
 		// and go onto the next room
 		if (connectionFound && !forceAccessibility)
 			floor.ConnectRegions(bestRoomA, bestRoomB, bestTileA, bestTileB, _tiles[2].data);
-			// grid->CreatePassage(bestRoomA, bestRoomB, grid->GetCell(bestTileA.x, bestTileA.y), grid->GetCell(bestTileB.x, bestTileB.y), _tiles[2].data);
+		// grid->CreatePassage(bestRoomA, bestRoomB, grid->GetCell(bestTileA.x, bestTileA.y), grid->GetCell(bestTileB.x, bestTileB.y), _tiles[2].data);
 	}
 
 	if (connectionFound && forceAccessibility)

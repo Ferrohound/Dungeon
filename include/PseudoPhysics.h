@@ -44,9 +44,7 @@
 #include <utility>
 
 #include "Graph.h"
-#include "Grid.h"
-#include "Region.h"
-#include "vec.h"
+#include "Floor.h"
 #include "NumTile.h"
 
 using std::cin;
@@ -86,7 +84,9 @@ class PhysicsSystem
 public:
 	PhysicsSystem() {}
 
-	Grid<int> *Generate(Grid<int>* grid, int fill = 10, bool dense = false, int minS = -1, int maxS = -1, int numSteps = 4);
+	void Generate(Floor<int>* floor, int fill = 10, bool dense = false, int minS = -1, int maxS = -1, int numSteps = 4);
+
+	Floor<int> *Generate(int width, int height, int fill = 10, bool dense = false, int minS = -1, int maxS = -1, int numSteps = 4);
 
 	void PopulateSystem(int minSize, int maxSize, int dimX, int dimY, int maxFill);
 

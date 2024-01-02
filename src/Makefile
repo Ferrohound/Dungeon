@@ -130,30 +130,6 @@ MapGenerator/fast:
 	cd /C/Users/ferrohound/Documents/code/software/DungeonGenerator && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/MapGenerator.dir/build.make src/CMakeFiles/MapGenerator.dir/build
 .PHONY : MapGenerator/fast
 
-MapGenerator.obj: MapGenerator.cpp.obj
-.PHONY : MapGenerator.obj
-
-# target to build an object file
-MapGenerator.cpp.obj:
-	cd /C/Users/ferrohound/Documents/code/software/DungeonGenerator && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/MapGenerator.dir/build.make src/CMakeFiles/MapGenerator.dir/MapGenerator.cpp.obj
-.PHONY : MapGenerator.cpp.obj
-
-MapGenerator.i: MapGenerator.cpp.i
-.PHONY : MapGenerator.i
-
-# target to preprocess a source file
-MapGenerator.cpp.i:
-	cd /C/Users/ferrohound/Documents/code/software/DungeonGenerator && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/MapGenerator.dir/build.make src/CMakeFiles/MapGenerator.dir/MapGenerator.cpp.i
-.PHONY : MapGenerator.cpp.i
-
-MapGenerator.s: MapGenerator.cpp.s
-.PHONY : MapGenerator.s
-
-# target to generate assembly for a file
-MapGenerator.cpp.s:
-	cd /C/Users/ferrohound/Documents/code/software/DungeonGenerator && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/MapGenerator.dir/build.make src/CMakeFiles/MapGenerator.dir/MapGenerator.cpp.s
-.PHONY : MapGenerator.cpp.s
-
 MapSystem.obj: MapSystem.cpp.obj
 .PHONY : MapSystem.obj
 
@@ -259,9 +235,6 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... MapGenerator"
-	@echo "... MapGenerator.obj"
-	@echo "... MapGenerator.i"
-	@echo "... MapGenerator.s"
 	@echo "... MapSystem.obj"
 	@echo "... MapSystem.i"
 	@echo "... MapSystem.s"

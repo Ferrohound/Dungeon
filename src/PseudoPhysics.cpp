@@ -4,9 +4,22 @@
 //================================== ROOM SYSTEM METHODS ================================
 // might want to cap out the size of the room for whatever reason later on so keep min and maxS
 
-Grid<int> *PhysicsSystem::Generate(Grid<int> *grid, int fill, bool dense, int minS, int maxS, int numSteps)
+Floor<int> *PhysicsSystem::Generate(int width, int height, int fill, bool dense, int minS, int maxS, int numSteps)
 {
-	_grid = grid;
+	NumTileFactory* f = new NumTileFactory();
+	Floor<int> *out = new Floor<int>(width, height, f);
+
+	Generate(out, fill, dense, minS, maxS, numSteps);
+
+	return out;
+}
+
+void PhysicsSystem::Generate(Floor<int> *floor, int fill, bool dense, int minS, int maxS, int numSteps)
+{
+
+	floor->Reset();
+
+	_grid = floor->grid;
 	int med, numRooms, fillVolume;
 
 	med = _grid->GetWidth() * _grid->GetWidth();
@@ -72,9 +85,9 @@ Grid<int> *PhysicsSystem::Generate(Grid<int> *grid, int fill, bool dense, int mi
 	std::cout << "Final graph has " << links.size() << " edges" << std::endl;
 	AddEdgesToFloor(links);
 
-	Grid<int> *clone = _grid->Clone();
+	// Grid<int> *clone = _grid->Clone();
 
-	return clone;
+	// return clone;
 }
 
 //===================== TO DO : free up memory properly ====================

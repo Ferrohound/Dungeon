@@ -7,6 +7,8 @@
 #pragma once
 
 #include <unordered_map>
+#include <iostream>
+#include <fstream>
 
 #include "Graph.h"
 #include "Grid.h"
@@ -45,12 +47,33 @@ public:
 		height = grid->height;
 	}
 
+	// TODO: what to do about numtile factory
+	~Floor()
+	{
+		delete grid;
+
+		for (auto &r : regions)
+		{
+			delete r;
+		}
+
+		for (auto &r : connectors)
+		{
+			delete r;
+		}
+	}
+
 	void Reset()
 	{
-		CellFactory<T>* f = grid->_factory;
+		// TODO: this may cause problems... the factory has to
+		// be made from the top level or this will be null
+		CellFactory<T> *f = grid->_factory;
 		delete grid;
 		grid = new Grid<T>(width, height, f);
 	}
+
+	bool Save(std::string name, std::string path = "");
+	bool Load(std::string name, std::string path = "");
 
 	void ConnectRegions(Region<T> *A, Region<T> *B, T fill, bool angular = false);
 	void ConnectRegions(Region<T> *A, Region<T> *B, vec2 cA, vec2 cB, T fill, bool angular = false);
@@ -60,12 +83,24 @@ public:
 	{
 		_mainRegion = A;
 	}
+
+	// overload the cout
+	friend std::ostream &operator<<(std::ostream &output, const Floor &F)
+	{
+		output << (*F.grid) << std::endl;
+		return output;
+	}
 };
 
 template <typename T>
 void Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, T fill, bool angular)
 {
-	connectors.push_back(grid->ConnectRegions(A, B, angular, fill));
+	auto region = grid->ConnectRegions(A, B, angular, fill);
+
+	if (region == NULL)
+		return;
+
+	connectors.push_back(region);
 }
 
 template <typename T>
@@ -97,3 +132,9 @@ void Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, Cell<T> *cA, Cell<T> *
 
 	connectors.push_back(newRegion);
 }
+
+template <typename T>
+bool Floor<T>::Save(std::string name, std::string path) { return true; }
+
+template <typename T>
+bool Floor<T>::Load(std::string name, std::string path) { return true; }

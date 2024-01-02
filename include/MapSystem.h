@@ -67,12 +67,14 @@ public:
 	void setDebug(bool newval) { debug = newval; }
 	void setPerlin(bool newval) { perlin = newval; }
 
-	Grid<int>* Generate(Floor<int>& floor, int width, int height, int fillPercentage = 30, bool useRandomSeed = true, int seed = 10, int smoothing = 2, bool connect = true);
+	void Generate(Floor<int> *floor, int fillPercentage = 30, bool useRandomSeed = true, int seed = 10, int smoothing = 2, bool connect = true);
+
+	Floor<int> *Generate(int width, int height, int fillPercentage = 30, bool useRandomSeed = true, int seed = 10, int smoothing = 2, bool connect = true);
 
 	// remove a wall or room region that is below a certain threshold and connect
 	// rooms
 	void ProcessMap(Floor<int> &floor, bool connect = true);
-	void SmoothMap(Floor<int> &floor);
+	void SmoothMap(Grid<int>* grid);
 
 	// modify rooms to make them more mountainous, etc..
 	void ProcessRooms(Floor<int> &floor, int max = 1, int min = 1, int smoothing = 1);

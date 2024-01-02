@@ -116,6 +116,7 @@ void PerlinFillMap(Grid<int> *grid, int seed)
 	delete pMap;
 }
 
+// TODO: 0s and 1s flip
 // randomly fill a map given a fillPercentage
 void RandomFillMap(Grid<int> *grid, bool useRandomSeed, int seed, int fillPercentage, bool debug)
 {
@@ -135,10 +136,10 @@ void RandomFillMap(Grid<int> *grid, bool useRandomSeed, int seed, int fillPercen
 		for (int y = 0; y < grid->GetHeight(); y++)
 		{
 			if (x == 0 || x == grid->GetWidth() - 1 || y == 0 || y == grid->GetHeight() - 1)
-				grid->_map[x][y]->data = numtiles[1].data;
+				grid->_map[x][y]->data = numtiles[0].data;
 			else
 				grid->_map[x][y]->data =
-					(rand() % 101 < fillPercentage) ? numtiles[1].data : numtiles[0].data;
+					(rand() % 101 < fillPercentage) ? numtiles[0].data : numtiles[1].data;
 		}
 	}
 	// cout<<"done filling"<<std::endl;
