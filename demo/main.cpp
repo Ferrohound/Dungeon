@@ -119,7 +119,7 @@ int main(int argx, char *argv[])
 	if (AP.IsSet("smoothing"))
 		smoothing = AP.Get<int>("smoothing");
 	else
-		smoothing = 2;
+		smoothing = 1;
 
 	rs = !(AP.Get<bool>("norandom"));
 	connect = AP.Get<bool>("connect");

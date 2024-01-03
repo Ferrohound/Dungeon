@@ -5,7 +5,7 @@
 
 Floor<int> *MapSystem::Generate(int width, int height, int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect)
 {
-	NumTileFactory* f = new NumTileFactory();
+	NumTileFactory *f = new NumTileFactory();
 	Floor<int> *out = new Floor<int>(width, height, f);
 
 	Generate(out, fillPercentage, useRandomSeed, seed, smoothing, connect);
@@ -32,12 +32,16 @@ void MapSystem::Generate(Floor<int> *floor, int fillPercentage, bool useRandomSe
 		PerlinFillMap(floor->grid, seed);
 	}
 
+	cout << *floor;
+
 	for (int i = 0; i < smoothing; i++)
 	{
 		SmoothMap(floor->grid);
 	}
 
-	// cout<<*grid;
+	cout << "Smoothing" << std::endl;
+
+	cout << *floor;
 
 	ProcessMap(*floor, connect);
 
@@ -65,7 +69,6 @@ void MapSystem::SmoothMap(Grid<int> *grid)
 			}
 		}
 	}
-	// cout<<"done smoothing"<<std::endl;
 }
 
 // clean up, remove wall regions and room regions that are too small
@@ -76,14 +79,16 @@ void MapSystem::ProcessMap(Floor<int> &floor, bool connect)
 	// lambda to group all tiles with > 0 as a wall
 	//  bool (*general_wall)(const Cell<int>* A, const Cell<int>* B) = NULL;
 
-	auto general_wall = [](const int MapCell, const int CellType) -> bool
+	auto general_wall = [](const int MapCell, const int Compare) -> bool
 	{
-		return MapCell > CellType ? true : false;
+		return MapCell > Compare;
 	};
 
 	cout << "Getting regions." << std::endl;
 
-	vector<vector<vec2>> wallRegions = floor.grid->GetRegions(_tiles->data, general_wall);
+	cout << _tiles[0].data << std::endl;
+
+	vector<vector<vec2>> wallRegions = floor.grid->GetRegions(_tiles[0].data, general_wall);
 	// vector<Region*> remainingSpaces;
 
 	cout << "Regions attained." << std::endl;
@@ -98,10 +103,9 @@ void MapSystem::ProcessMap(Floor<int> &floor, bool connect)
 			for (int j = 0; j < wallRegions[i].size(); j++)
 			{
 				vec2 t = wallRegions[i][j];
-				// remember that 1 is space in this for some insane reason
 				if (floor.grid->InMapRange(t.x, t.y))
 				{
-					floor.grid->_map[t.x][t.y] = &_tiles[1];
+					floor.grid->_map[t.x][t.y] = &_tiles[0];
 				}
 			}
 		}
@@ -113,7 +117,7 @@ void MapSystem::ProcessMap(Floor<int> &floor, bool connect)
 	}
 	cout << "Removed Walls" << std::endl;
 
-	cout << *(floor.grid);
+	cout << floor;
 
 	vector<vector<vec2>> roomRegions =
 		floor.grid->GetRegions(_tiles[1].data, general_wall);
@@ -132,7 +136,7 @@ void MapSystem::ProcessMap(Floor<int> &floor, bool connect)
 			for (int j = 0; j < roomRegions[i].size(); j++)
 			{
 				vec2 t = roomRegions[i][j];
-				floor.grid->_map[t.x][t.y]->data = _tiles[1].data;
+				floor.grid->_map[t.x][t.y]->data = _tiles[0].data;
 			}
 		}
 		// otherwise create a region with those tiles
@@ -147,6 +151,8 @@ void MapSystem::ProcessMap(Floor<int> &floor, bool connect)
 
 	// if (debug)
 	cout << "Removed " << roomRegions.size() - remainingRooms.size() << " rooms." << std::endl;
+
+	cout << floor;
 
 	// error check this to make sure the room's aren't all eliminated
 	// remainingRooms.Sort();

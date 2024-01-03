@@ -139,7 +139,7 @@ void RandomFillMap(Grid<int> *grid, bool useRandomSeed, int seed, int fillPercen
 				grid->_map[x][y]->data = numtiles[0].data;
 			else
 				grid->_map[x][y]->data =
-					(rand() % 101 < fillPercentage) ? numtiles[0].data : numtiles[1].data;
+					(rand() % 101 < fillPercentage) ? numtiles[1].data : numtiles[0].data;
 		}
 	}
 	// cout<<"done filling"<<std::endl;

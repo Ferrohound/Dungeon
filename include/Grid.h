@@ -128,7 +128,7 @@ public:
 					auto cell = GetCell(x, y);
 					if (cell == NULL)
 						continue;
-					if ((x == region[i].x || y == region[i].y) && std::find(regionContents, regionContents + N,cell->data) != regionContents + N)
+					if ((x == region[i].x || y == region[i].y) && std::find(regionContents, regionContents + N, cell->data) != regionContents + N)
 					{
 						border.push_back(_map[x][y]);
 					}
@@ -182,6 +182,8 @@ public:
 		{
 			out.push_back(GetCell(i.x, i.y));
 		}
+
+		return out;
 	}
 
 	int GetWidth() { return _width; }
@@ -429,19 +431,8 @@ vector<vec2> Grid<T>::GetRegionCells(int sx, int sy, bool (*compare)(const T A, 
 		cout << "Compare function null" << std::endl;
 	}
 
-	// check if Cell was looked at yet
-	// need to initialize each value, however, look at alternatives
-	vector<vector<int>> flags;
-	for (int i = 0; i < _width; i++)
-	{
-		vector<int> tmp;
-
-		for (int j = 0; j < _height; j++)
-		{
-			tmp.push_back(0);
-		}
-		flags.push_back(tmp);
-	}
+	// flags to determine which Cells have already been visited
+	vector<vector<int>> flags(_width, vector<int>(_height, 0));
 
 	T CellType = _map[sx][sy]->data;
 
@@ -461,11 +452,12 @@ vector<vec2> Grid<T>::GetRegionCells(int sx, int sy, bool (*compare)(const T A, 
 		{
 			for (int y = t.y - 1; y <= t.y + 1; y++)
 			{
-				if (InMapRange(x, y) && (y == t.y || x == t.x) && flags[x][y] == 0)
+				// TODO: re-add diagonal filter?
+				if (InMapRange(x, y) && flags[x][y] == 0)
 				{
 					if (compare)
 					{
-						if (compare(CellType, _map[x][y]->data))
+						if (compare(_map[x][y]->data, CellType))
 						{
 							flags[x][y] = 1;
 							q.push(vec2{x, y});
@@ -473,7 +465,7 @@ vector<vec2> Grid<T>::GetRegionCells(int sx, int sy, bool (*compare)(const T A, 
 					}
 					else
 					{
-						if (default_compare(CellType, _map[x][y]->data))
+						if (default_compare(_map[x][y]->data, CellType))
 						{
 							flags[x][y] = 1;
 							q.push(vec2{x, y});
@@ -487,14 +479,16 @@ vector<vec2> Grid<T>::GetRegionCells(int sx, int sy, bool (*compare)(const T A, 
 	return Cells;
 }
 
+// TODO: there's a minor issue with this: we should pass an array of
+// mapcells in case the region is made up of more than 1s and 0s
 template <typename T>
-vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const T MapCell, const T CellType))
+vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const T MapCell, const T Compare))
 {
 	vector<vector<vec2>> regions;
 
-	auto default_compare = [](const T A, T B) -> bool
+	auto default_compare = [](const T MapCell, const T Compare) -> bool
 	{
-		if (A == B)
+		if (MapCell == Compare)
 			return true;
 		else
 			return false;
@@ -506,17 +500,7 @@ vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const
 	}
 
 	// flags to determine which Cells have already been visited
-	vector<vector<int>> flags;
-	for (int i = 0; i < _width; i++)
-	{
-		vector<int> tmp;
-
-		for (int j = 0; j < _height; j++)
-		{
-			tmp.push_back(0);
-		}
-		flags.push_back(tmp);
-	}
+	vector<vector<int>> flags(_width, vector<int>(_height, 0));
 
 	// iterate over every Cell, could optimize this fairly easily
 	// by removing locations from the set as we touch them
@@ -524,12 +508,23 @@ vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const
 	{
 		for (int y = 0; y < _height; y++)
 		{
-			if (compare && compare(_map[x][y]->data, CellType))
+			if (compare && compare(_map[x][y]->data, CellType) && flags[x][y] == 0)
 			{
-				if (flags[x][y] == 0)
+				vector<vec2> newRegion = GetRegionCells(x, y, default_compare);
+				regions.push_back(newRegion);
+
+				for (int i = 0; i < newRegion.size(); i++)
+				{
+					vec2 t = newRegion[i];
+					flags[t.x][t.y] = 1;
+				}
+			}
+			else
+			{
+				if (default_compare(_map[x][y]->data, CellType) && flags[x][y] == 0)
 				{
 					// cout<<"getting region..."<<std::endl;
-					vector<vec2> newRegion = GetRegionCells(x, y, compare);
+					vector<vec2> newRegion = GetRegionCells(x, y, default_compare);
 					// cout<<"got region"<<std::endl;
 					regions.push_back(newRegion);
 
@@ -537,25 +532,6 @@ vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const
 					{
 						vec2 t = newRegion[i];
 						flags[t.x][t.y] = 1;
-					}
-				}
-			}
-			else
-			{
-				if (default_compare(_map[x][y]->data, CellType))
-				{
-					if (flags[x][y] == 0)
-					{
-						// cout<<"getting region..."<<std::endl;
-						vector<vec2> newRegion = GetRegionCells(x, y, compare);
-						// cout<<"got region"<<std::endl;
-						regions.push_back(newRegion);
-
-						for (int i = 0; i < newRegion.size(); i++)
-						{
-							vec2 t = newRegion[i];
-							flags[t.x][t.y] = 1;
-						}
 					}
 				}
 			}

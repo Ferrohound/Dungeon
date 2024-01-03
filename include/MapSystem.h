@@ -60,6 +60,11 @@ class MapSystem
 public:
 	MapSystem(Cell<int> *tiles) : _tiles(tiles)
 	{
+		if (tiles)
+			tileCount = sizeof(tiles) / sizeof(*tiles);
+		else
+			tileCount = 0;
+
 		debug = false;
 		perlin = false;
 	}
@@ -74,7 +79,7 @@ public:
 	// remove a wall or room region that is below a certain threshold and connect
 	// rooms
 	void ProcessMap(Floor<int> &floor, bool connect = true);
-	void SmoothMap(Grid<int>* grid);
+	void SmoothMap(Grid<int> *grid);
 
 	// modify rooms to make them more mountainous, etc..
 	void ProcessRooms(Floor<int> &floor, int max = 1, int min = 1, int smoothing = 1);
@@ -89,4 +94,5 @@ public:
 private:
 	bool debug, perlin;
 	Cell<int> *_tiles;
+	int tileCount;
 };
