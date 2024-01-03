@@ -50,8 +50,6 @@ public:
 	// TODO: what to do about numtile factory
 	~Floor()
 	{
-		delete grid;
-
 		for (auto &r : regions)
 		{
 			delete r;
@@ -61,6 +59,7 @@ public:
 		{
 			delete r;
 		}
+		delete grid;
 	}
 
 	void Reset()
@@ -75,9 +74,21 @@ public:
 	bool Save(std::string name, std::string path = "");
 	bool Load(std::string name, std::string path = "");
 
-	void ConnectRegions(Region<T> *A, Region<T> *B, T fill, bool angular = false);
-	void ConnectRegions(Region<T> *A, Region<T> *B, vec2 cA, vec2 cB, T fill, bool angular = false);
-	void ConnectRegions(Region<T> *A, Region<T> *B, Cell<T> *cA, Cell<T> *cB, T fill, bool angular = false);
+	void AddRegion(Region<T> *A)
+	{
+		regions.push_back(A);
+	}
+
+	Region<T> *AddRegion(vector<Cell<T> *> cells, vector<Cell<T> *> border = vector<Cell<T> *>())
+	{
+		Region<T> *out = new Region<T>(cells, border);
+		AddRegion(out);
+		return out;
+	}
+
+	Region<T> *ConnectRegions(Region<T> *A, Region<T> *B, T fill, bool angular = false);
+	Region<T> *ConnectRegions(Region<T> *A, Region<T> *B, vec2 cA, vec2 cB, T fill, bool angular = false);
+	Region<T> *ConnectRegions(Region<T> *A, Region<T> *B, Cell<T> *cA, Cell<T> *cB, T fill, bool angular = false);
 
 	void SetMainRegion(Region<T> *A)
 	{
@@ -93,18 +104,34 @@ public:
 };
 
 template <typename T>
-void Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, T fill, bool angular)
+Region<T> *Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, T fill, bool angular)
 {
-	auto region = grid->ConnectRegions(A, B, angular, fill);
+	auto regionTiles = grid->GetRegionConnection(A, B, angular, fill);
+
+	if (regionTiles.size() == 0)
+		return NULL;
+
+	Region<T> *region = new Region<T>(regionTiles);
 
 	if (region == NULL)
-		return;
+		return NULL;
+
+	for (Cell<T> *cell : regionTiles)
+	{
+		grid->DrawCircle(cell->pos, 1, fill);
+	}
+
+	Region<T>::ConnectRegions(A, B);
+	Region<T>::ConnectRegions(region, A);
+	Region<T>::ConnectRegions(region, B);
 
 	connectors.push_back(region);
+
+	return region;
 }
 
 template <typename T>
-void Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, vec2 cA, vec2 cB, T fill, bool angular)
+Region<T> *Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, vec2 cA, vec2 cB, T fill, bool angular)
 {
 	// TODO: this gets reused a lot, maybe have a grid function
 
@@ -112,7 +139,7 @@ void Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, vec2 cA, vec2 cB, T fi
 }
 
 template <typename T>
-void Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, Cell<T> *cA, Cell<T> *cB, T fill, bool angular)
+Region<T> *Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, Cell<T> *cA, Cell<T> *cB, T fill, bool angular)
 {
 	// TODO: this gets reused a lot, maybe have a grid function
 
@@ -131,6 +158,8 @@ void Floor<T>::ConnectRegions(Region<T> *A, Region<T> *B, Cell<T> *cA, Cell<T> *
 	Region<T>::ConnectRegions(newRegion, B);
 
 	connectors.push_back(newRegion);
+
+	return newRegion;
 }
 
 template <typename T>

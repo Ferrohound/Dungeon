@@ -70,7 +70,7 @@ public:
 	vector<vector<vec2>> GetRegions(const T CellType, bool (*compare)(const T MapCell, const T CellType) = NULL);
 
 	// is the given position an outline Cell (reference)
-	bool IsOutlineCell(int x, int y, Cell<T> *reference);
+	bool IsOutlineCell(int x, int y, T reference);
 
 	template <size_t N>
 	vector<Cell<T> *> GetRegionOutline(Region<T> *region, T (&regionContents)[N])
@@ -142,7 +142,7 @@ public:
 
 	vector<Cell<T> *> GetPassageCells(Cell<T> *tA, Cell<T> *tB);
 	vector<Cell<T> *> GetPassageCells(vec2 tA, vec2 tB);
-	Region<T> *ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill);
+	vector<Cell<T> *> GetRegionConnection(Region<T> *A, Region<T> *B, bool angular, T fill);
 
 	vector<vec2> GetLine(vec2 start, vec2 end);
 
@@ -242,7 +242,7 @@ vector<Cell<T> *> Grid<T>::GetPassageCells(vec2 tA, vec2 tB)
 }
 
 template <typename T>
-Region<T> *Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill)
+vector<Cell<T> *> Grid<T>::GetRegionConnection(Region<T> *A, Region<T> *B, bool angular, T fill)
 {
 	int lowestD = (int)(pow((A->border[0]->pos.x - B->border[0]->pos.x), 2) +
 						(pow((A->border[0]->pos.y - B->border[0]->pos.y), 2)));
@@ -295,22 +295,7 @@ Region<T> *Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T f
 		// return GetPassageCells(A, B, bestCellA, bestCellB, fill);
 	}
 
-	if (regionTiles.size() == 0)
-		return NULL;
-
-	for (Cell<T> *cell : regionTiles)
-	{
-		DrawCircle(cell->pos, 1, fill);
-	}
-
-	Region<T>::ConnectRegions(A, B);
-
-	Region<T> *out = new Region<T>(regionTiles);
-
-	Region<T>::ConnectRegions(out, A);
-	Region<T>::ConnectRegions(out, B);
-
-	return out;
+	return regionTiles;
 }
 
 #pragma endregion helper_functions
@@ -348,7 +333,8 @@ Grid<T>::~Grid()
 	{
 		for (Cell<T> *cell : row)
 		{
-			delete cell;
+			if (cell)
+				delete cell;
 		}
 	}
 }
@@ -386,7 +372,7 @@ void Grid<T>::Clear()
 // Cells is an "empty" spot (assuming the Cell in question isn't)
 // empty itself
 template <typename T>
-bool Grid<T>::IsOutlineCell(int x, int y, Cell<T> *reference)
+bool Grid<T>::IsOutlineCell(int x, int y, T reference)
 {
 	if (!InMapRange(x, y))
 		return false;
@@ -403,7 +389,7 @@ bool Grid<T>::IsOutlineCell(int x, int y, Cell<T> *reference)
 			if (!InMapRange(i, j))
 				continue;
 
-			if (_map[i][j] == reference)
+			if (_map[i][j]->data == reference)
 				return true;
 		}
 	}

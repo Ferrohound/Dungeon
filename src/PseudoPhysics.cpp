@@ -6,7 +6,6 @@
 
 Floor<int> *PhysicsSystem::Generate(int width, int height, int fill, bool dense, int minS, int maxS, int numSteps)
 {
-	NumTileFactory* f = new NumTileFactory();
 	Floor<int> *out = new Floor<int>(width, height, f);
 
 	Generate(out, fill, dense, minS, maxS, numSteps);
@@ -38,7 +37,11 @@ void PhysicsSystem::Generate(Floor<int> *floor, int fill, bool dense, int minS, 
 		std::cout << "Med: " << med << " MaxS " << maxS << " MINS " << minS << std::endl;
 	}
 
+	for(auto& rn: nodes){
+		delete rn;
+	}
 	nodes.clear();
+
 	cmX = cmY = 0;
 	bounds.x = _grid->GetWidth() - 1;
 	bounds.y = _grid->GetHeight() - 1;
@@ -49,7 +52,7 @@ void PhysicsSystem::Generate(Floor<int> *floor, int fill, bool dense, int minS, 
 		Tick();
 
 	for (auto &RN : nodes)
-		AddRoomToFloor(RN);
+		AddRoomToFloor(*floor, RN);
 
 	Graph<RoomNode> G = ConnectSystem();
 	Graph<RoomNode> mst = G.MST();
@@ -83,7 +86,7 @@ void PhysicsSystem::Generate(Floor<int> *floor, int fill, bool dense, int minS, 
 	}
 
 	std::cout << "Final graph has " << links.size() << " edges" << std::endl;
-	AddEdgesToFloor(links);
+	AddEdgesToFloor(*floor, links);
 
 	// Grid<int> *clone = _grid->Clone();
 
@@ -292,11 +295,11 @@ void PhysicsSystem::AddDenseCycles(Graph<RoomNode> &MST)
 
 //======================= to do =========================
 
-void PhysicsSystem::AddEdgesToFloor(vector<Edge<RoomNode>> &edges)
+void PhysicsSystem::AddEdgesToFloor(Floor<int>& f, vector<Edge<RoomNode>> &edges)
 {
 	for (auto &edge : edges)
 	{
-		_grid->ConnectRegions(edge.to->data->GetRoom(),
+		f.ConnectRegions(edge.to->data->GetRoom(),
 							  edge.from->data->GetRoom(), true, _fill);
 	}
 }
@@ -304,7 +307,7 @@ void PhysicsSystem::AddEdgesToFloor(vector<Edge<RoomNode>> &edges)
 //================= to do ====================
 // need to create room then add it to the floor
 
-void PhysicsSystem::AddRoomToFloor(RoomNode *room)
+void PhysicsSystem::AddRoomToFloor(Floor<int>& f, RoomNode *room)
 {
 	Region<int> *rm;
 	vec2 pos = room->GetPosition();
@@ -336,7 +339,7 @@ void PhysicsSystem::AddRoomToFloor(RoomNode *room)
 		}
 	}
 
-	rm = new Region<int>(tiles, border);
+	rm = f.AddRegion(tiles, border);
 	rm->Fill(_fill);
 
 	room->SetRoom(rm);

@@ -73,6 +73,9 @@ public:
 	Region<int> *GetRoom() { return _r; }
 	void SetRoom(Region<int> *r) { _r = r; }
 
+	vector<Cell<int>*> fill;
+	vector<Cell<int>*> border;
+
 private:
 	float _size;
 	vec2 _pos;
@@ -82,9 +85,23 @@ private:
 class PhysicsSystem
 {
 public:
-	PhysicsSystem() {}
+	PhysicsSystem()
+	{
+		f = new NumTileFactory();
+	}
 
-	void Generate(Floor<int>* floor, int fill = 10, bool dense = false, int minS = -1, int maxS = -1, int numSteps = 4);
+	~PhysicsSystem()
+	{
+		delete f;
+
+		for (auto &rn : nodes)
+		{
+			delete rn;
+		}
+		nodes.clear();
+	}
+
+	void Generate(Floor<int> *floor, int fill = 10, bool dense = false, int minS = -1, int maxS = -1, int numSteps = 4);
 
 	Floor<int> *Generate(int width, int height, int fill = 10, bool dense = false, int minS = -1, int maxS = -1, int numSteps = 4);
 
@@ -102,8 +119,8 @@ public:
 	void AddDenseCycles(Graph<RoomNode> &MST);
 
 	// function to add all of the edges to the map
-	void AddEdgesToFloor(vector<Edge<RoomNode>> &edges);
-	void AddRoomToFloor(RoomNode *room);
+	void AddEdgesToFloor(Floor<int>& f, vector<Edge<RoomNode>> &edges);
+	void AddRoomToFloor(Floor<int>& f, RoomNode *room);
 
 private:
 	int _fill = 1;
@@ -111,5 +128,6 @@ private:
 	std::vector<RoomNode *> nodes;
 	vec2 bounds;
 	int cmX, cmY;
-	Grid<int>* _grid;
+	Grid<int> *_grid;
+	NumTileFactory *f;
 };

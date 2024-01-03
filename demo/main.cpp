@@ -58,7 +58,7 @@ void DrawStyleOutlineMap(Floor<int> *f)
 		{
 			if ((t->_map[i][j]->data == numtiles[1].data ||
 				 t->_map[i][j]->data == numtiles[2].data) &&
-				t->IsOutlineCell(i, j, &numtiles[1]))
+				t->IsOutlineCell(i, j, numtiles[1].data))
 			{
 				cout << "x";
 			}

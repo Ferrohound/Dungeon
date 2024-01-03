@@ -65,9 +65,12 @@ public:
 		else
 			tileCount = 0;
 
+		f = new NumTileFactory();
 		debug = false;
 		perlin = false;
 	}
+
+	~MapSystem() { delete f; }
 
 	void setDebug(bool newval) { debug = newval; }
 	void setPerlin(bool newval) { perlin = newval; }
@@ -95,4 +98,5 @@ private:
 	bool debug, perlin;
 	Cell<int> *_tiles;
 	int tileCount;
+	NumTileFactory *f;
 };

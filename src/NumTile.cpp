@@ -45,8 +45,8 @@ int GetSurroundingWallCount(Grid<int> *grid, int sx, int sy)
 				wallCount++;
 			else
 			{
-				Cell<int> *t = grid->_map[x][y];
-				if (t->data != 0)
+				Cell<int> *t = grid->GetCell(x, y);
+				if (t == NULL || t->data != 0)
 				{
 					wallCount++;
 				}
@@ -107,7 +107,7 @@ void PerlinFillMap(Grid<int> *grid, int seed)
 		int x = i / grid->GetWidth();
 		int y = i % grid->GetWidth();
 
-		grid->_map[x][y] = &numtiles[(int)pMap[i]];
+		grid->_map[x][y]->data = numtiles[(int)pMap[i]].data;
 	}
 
 	// grid->ImportFloor(pMap, grid->GetWidth(), grid->GetHeight());
