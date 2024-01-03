@@ -1,10 +1,21 @@
-#Create two libraries, one called Grid and one called MapGenerator
+#Create Grid lib and MapGenerator lib
+# our src files
+# SET(MAPGEN_SRC
+#     MapGenerator.cpp
+#     Region.cpp 
+#     NumTile.cpp
+#     MapSystem.cpp
+#     RoomSystem.cpp
+#     perlin_noise.cpp
+# )
 
-add_library(Grid STATIC Grid.cpp)
+# add_library(Grid STATIC Region.cpp Grid.cpp)
 #perlin_noise.cpp should probably be moved, but i'm not sure where to right now...
-add_library(MapGenerator STATIC MapGenerator.cpp perlin_noise.cpp)
 
-target_link_libraries(MapGenerator Grid)
+# add_library(MapGenerator STATIC MapGenerator.cpp perlin_noise.cpp)
+add_library(MapGenerator STATIC NumTile.cpp perlin_noise.cpp PseudoPhysics.cpp MapSystem.cpp )
+
+# target_link_libraries(MapGenerator Grid)
 
 # Make sure the compiler can find include files for our Hello library
 # when other libraries or executables link to Hello

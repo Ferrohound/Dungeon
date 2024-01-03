@@ -17,9 +17,11 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# ignore visual studio code directory
-src/.vscode/*
-build
+.vscode/
+build/
+*.o
+src/*.a
+*.exe
 
 # =========================
 # Operating System Files

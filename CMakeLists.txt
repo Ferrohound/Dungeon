@@ -1,12 +1,18 @@
-cmake_minimum_required (VERSION 2.8)
-project (DungeonGenerator)
+cmake_minimum_required (VERSION 2.8.12)
+set(CMAKE_C_COMPILER "C:/msys2/mingw64/bin/gcc.exe")
+set(CMAKE_CXX_COMPILER "C:/msys2/mingw64/bin/g++.exe")
+
+project(DungeonGenerator)
 
 #set generator
 set(CMAKE_GENERATOR "MSYS Makefiles" CACHE INTERNAL "" #[[FORCE: sets it so that unless you use -G "makefile type" it defaults to this]])
 
+
 #can set from command line by cmake -D VARNAME=value
 set(build_demo TRUE CACHE BOOL "Build demo")
 set(library_dir ${CMAKE_CURRENT_SOURCE_DIR}/lib CACHE PATH "Where to put built libraries")
+
+set(DEBUG_BUILD TRUE CACHE BOOL "Debug Build")
 
 message( STATUS ${library_dir} )
 
@@ -31,7 +37,16 @@ elseif (UNIX)
 endif (UNIX)
 ]]
 
-add_definitions( -std=c++11 )
+# if we're in debug mode pass th(e g flag
+if(DEBUG_BUILD)
+    set(CMAKE_BUILD_TYPE Debug)
+    add_definitions(-static-libgcc)
+    add_definitions(-static-libstdc++)
+    add_definitions(-ggdb)
+    add_definitions( -g )
+endif()
+
+set(CMAKE_CXX_STANDARD 11)
 include_directories("include")
 
 add_subdirectory(src)
