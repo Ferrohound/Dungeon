@@ -13,7 +13,7 @@
 #perlin_noise.cpp should probably be moved, but i'm not sure where to right now...
 
 # add_library(MapGenerator STATIC MapGenerator.cpp perlin_noise.cpp)
-add_library(MapGenerator STATIC NumTile.cpp perlin_noise.cpp PseudoPhysics.cpp MapGenerator.cpp MapSystem.cpp )
+add_library(MapGenerator STATIC NumTile.cpp perlin_noise.cpp PseudoPhysics.cpp MapSystem.cpp )
 
 # target_link_libraries(MapGenerator Grid)
 

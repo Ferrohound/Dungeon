@@ -164,6 +164,15 @@ public:
         }
     }
 
+    // TODO: figure out whose responsibility it is to delete this0
+    ~Graph<T>()
+    {
+        // for (Node<T>* n: nodes)
+        // {
+        //     delete n;
+        // }
+    }
+
     void AddEdge(Node<T> *A, Node<T> *B, float weight = 1)
     {
         /*if( data.find(A) != data.end() )
@@ -278,62 +287,6 @@ public:
             output = -1;
         return output;
     }
-
-    // vector< Edge<T> > MST()
-    //  Graph<T> MST()
-    //  {
-    //      Graph<T> output = Graph<T>(nodes);
-    //      //return the new graph
-    //      //algorithm...
-    //      /*
-    //          sort edges by weight
-    //          while the list of edges isn't empty, remove an edge from the set
-    //          if this edge connects two unconnected nodes, add it to the MST
-
-    //     */
-
-    //     //vector< Edge<T> > out;
-    //     vector< Edge<T> > tmp = edges;
-    //     std::sort(tmp.begin(), tmp.end());
-
-    //     /*std::cout<<"Sanity check.."<<std::endl;
-    //     for(auto& e : tmp)
-    //     {
-    //         std::cout<<e.weight<<"->";
-    //     }
-    //     std::cout<<std::endl;*/
-
-    //     //need a fresh set of nodes to make this work..
-
-    //     //Heap<Node<T>*, int> Q;
-    //     std::queue< Edge<T> > Q;
-
-    //     for(int i = 0; i < tmp.size(); i++)
-    //     {
-    //         Q.push(tmp[i]);
-    //     }
-
-    //     while(Q.size()!=0)
-    //     {
-    //         Edge<T> l = Q.front();
-    //         Q.pop();
-
-    //         if(!output.Connected(l.to, l.from) && !output.Connected(l.from, l.to))
-    //         {
-    //             //out.push_back(l);
-    //             //add the edges to the MST_Edges vector
-    //             //l.to->MST_Edges.push_back(l);
-    //             //l.from->MST_Edges.push_back(l);
-    //             //cout<<"Added Edge"<<std::endl;
-    //             output.AddEdge(l);
-    //         }
-    //     }
-
-    //     //return out;
-    //     std::cout<<"From original "<<GetEdges().size()<<" edges ";
-    //     std::cout<<"created MST which has "<<output.GetEdges().size()<<" edges."<<std::endl;
-    //     return output;
-    // }
 
     Graph<T> MST()
     {

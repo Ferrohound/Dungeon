@@ -4,13 +4,24 @@
 //================================== ROOM SYSTEM METHODS ================================
 // might want to cap out the size of the room for whatever reason later on so keep min and maxS
 
-Grid<int> *PhysicsSystem::Generate(int width, int height, int fill, bool dense, int minS, int maxS, int numSteps)
+Floor<int> *PhysicsSystem::Generate(int width, int height, int fill, bool dense, int minS, int maxS, int numSteps)
 {
-	NumTileFactory f = NumTileFactory(0);
-	_grid = Grid<int>(width, height, &f);
+	Floor<int> *out = new Floor<int>(width, height, f);
+
+	Generate(out, fill, dense, minS, maxS, numSteps);
+
+	return out;
+}
+
+void PhysicsSystem::Generate(Floor<int> *floor, int fill, bool dense, int minS, int maxS, int numSteps)
+{
+
+	floor->Reset();
+
+	_grid = floor->grid;
 	int med, numRooms, fillVolume;
 
-	med = _grid.GetWidth() * _grid.GetWidth();
+	med = _grid->GetWidth() * _grid->GetWidth();
 	fillVolume = (int)(med * ((float)fill / 100.0));
 
 	if (minS == -1 || maxS == -1)
@@ -26,17 +37,22 @@ Grid<int> *PhysicsSystem::Generate(int width, int height, int fill, bool dense, 
 		std::cout << "Med: " << med << " MaxS " << maxS << " MINS " << minS << std::endl;
 	}
 
+	for(auto& rn: nodes){
+		delete rn;
+	}
 	nodes.clear();
-	cmX = cmY = 0;
-	bounds.x = _grid.GetWidth() - 1;
-	bounds.y = _grid.GetHeight() - 1;
 
-	PopulateSystem(minS, maxS, _grid.GetWidth(), _grid.GetHeight(), fillVolume);
+	cmX = cmY = 0;
+	bounds.x = _grid->GetWidth() - 1;
+	bounds.y = _grid->GetHeight() - 1;
+
+	PopulateSystem(minS, maxS, _grid->GetWidth(), _grid->GetHeight(), fillVolume);
+
 	for (int i = 0; i < numSteps; i++)
 		Tick();
 
 	for (auto &RN : nodes)
-		AddRoomToFloor(RN);
+		AddRoomToFloor(*floor, RN);
 
 	Graph<RoomNode> G = ConnectSystem();
 	Graph<RoomNode> mst = G.MST();
@@ -52,23 +68,29 @@ Grid<int> *PhysicsSystem::Generate(int width, int height, int fill, bool dense, 
 		AddDenseCycles(mst);
 	}
 
-	auto links = mst.GetEdges();
+	vector<Edge<RoomNode>> links;
+
+	auto tmpLinks = mst.GetEdges();
 	auto rooms = mst.GetNodes();
+
+	// remove links with a weight of 0
+	std::copy_if(tmpLinks.begin(), tmpLinks.end(), std::back_inserter(links), [](Edge<RoomNode> i)
+				 { return i.weight > 0; });
 
 	for (auto r : rooms)
 	{
 		auto region = r->data->GetRoom();
 		int fillArray[] = {_fill};
 		// region->border = _grid.GetRegionOutline(region, {_fill});
-		region->border = _grid.GetRegionOutline(region,fillArray);
+		region->border = _grid->GetRegionOutline(region, fillArray);
 	}
 
 	std::cout << "Final graph has " << links.size() << " edges" << std::endl;
-	AddEdgesToFloor(links);
+	AddEdgesToFloor(*floor, links);
 
-	Grid<int>* clone = _grid.Clone();
+	// Grid<int> *clone = _grid->Clone();
 
-	return clone;
+	// return clone;
 }
 
 //===================== TO DO : free up memory properly ====================
@@ -273,19 +295,19 @@ void PhysicsSystem::AddDenseCycles(Graph<RoomNode> &MST)
 
 //======================= to do =========================
 
-void PhysicsSystem::AddEdgesToFloor(vector<Edge<RoomNode>> &edges)
+void PhysicsSystem::AddEdgesToFloor(Floor<int>& f, vector<Edge<RoomNode>> &edges)
 {
 	for (auto &edge : edges)
 	{
-		_grid.ConnectRegions(edge.to->data->GetRoom(),
-							 edge.from->data->GetRoom(), true, _fill);
+		f.ConnectRegions(edge.to->data->GetRoom(),
+							  edge.from->data->GetRoom(), true, _fill);
 	}
 }
 
 //================= to do ====================
 // need to create room then add it to the floor
 
-void PhysicsSystem::AddRoomToFloor(RoomNode *room)
+void PhysicsSystem::AddRoomToFloor(Floor<int>& f, RoomNode *room)
 {
 	Region<int> *rm;
 	vec2 pos = room->GetPosition();
@@ -296,7 +318,8 @@ void PhysicsSystem::AddRoomToFloor(RoomNode *room)
 	{
 		for (int j = pos.y; j < pos.y + room->GetSize(); j++)
 		{
-			tiles.push_back(_grid.GetCell(i, j));
+			if (_grid->GetCell(i, j))
+				tiles.push_back(_grid->GetCell(i, j));
 		}
 	}
 
@@ -308,7 +331,7 @@ void PhysicsSystem::AddRoomToFloor(RoomNode *room)
 		{
 			for (int y = tiles[i]->pos.y - 1; y < tiles[i]->pos.y + 1; y++)
 			{
-				if ((x == tiles[i]->pos.x || y == tiles[i]->pos.y) && _grid.GetCell(x, y)->data == tiles[i]->data)
+				if ((x == tiles[i]->pos.x || y == tiles[i]->pos.y) && _grid->GetCell(x, y)->data == tiles[i]->data)
 				{
 					border.push_back(tiles[i]);
 				}
@@ -316,7 +339,7 @@ void PhysicsSystem::AddRoomToFloor(RoomNode *room)
 		}
 	}
 
-	rm = new Region<int>(tiles, border);
+	rm = f.AddRegion(tiles, border);
 	rm->Fill(_fill);
 
 	room->SetRoom(rm);

@@ -63,14 +63,14 @@ public:
 
 	~Grid();
 
-	bool InMapRange(int x, int y);
+	bool InMapRange(int x, int y) const;
 
 	// get regions of the same type of Cell using floodfill
 	vector<vec2> GetRegionCells(int sx, int sy, bool (*compare)(const T A, const T B) = NULL);
 	vector<vector<vec2>> GetRegions(const T CellType, bool (*compare)(const T MapCell, const T CellType) = NULL);
 
 	// is the given position an outline Cell (reference)
-	bool IsOutlineCell(int x, int y, Cell<T> *reference);
+	bool IsOutlineCell(int x, int y, T reference);
 
 	template <size_t N>
 	vector<Cell<T> *> GetRegionOutline(Region<T> *region, T (&regionContents)[N])
@@ -125,7 +125,10 @@ public:
 			{
 				for (int y = region[i].y - 1; y < region[i].y + 1; y++)
 				{
-					if ((x == region[i].x || y == region[i].y) && std::find(regionContents, regionContents + N, _map[x][y]->data) != regionContents + N)
+					auto cell = GetCell(x, y);
+					if (cell == NULL)
+						continue;
+					if ((x == region[i].x || y == region[i].y) && std::find(regionContents, regionContents + N, cell->data) != regionContents + N)
 					{
 						border.push_back(_map[x][y]);
 					}
@@ -137,9 +140,9 @@ public:
 
 	void DrawCircle(vec2 t, int r, T fill);
 
-	void CreatePassage(Region<T> *A, Region<T> *B, Cell<T> *tA, Cell<T> *tB, T fill) ;
-	void CreatePassage(Region<T> *A, Region<T> *B, vec2 tA, vec2 tB, T fill);
-	void ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill);
+	vector<Cell<T> *> GetPassageCells(Cell<T> *tA, Cell<T> *tB);
+	vector<Cell<T> *> GetPassageCells(vec2 tA, vec2 tB);
+	vector<Cell<T> *> GetRegionConnection(Region<T> *A, Region<T> *B, bool angular, T fill);
 
 	vector<vec2> GetLine(vec2 start, vec2 end);
 
@@ -159,9 +162,16 @@ public:
 
 	vector<vector<int>> GetMap();
 
+	Cell<T> *GetCell(vec2 pos) const
+	{
+		return GetCell(pos.x, pos.y);
+	}
+
 	Cell<T> *GetCell(int x, int y) const
 	{
-		return _map[x][y];
+		if (InMapRange(x, y))
+			return _map[x][y];
+		return NULL;
 	}
 
 	vector<Cell<T> *> GetCells(vector<vec2> positions)
@@ -172,6 +182,8 @@ public:
 		{
 			out.push_back(GetCell(i.x, i.y));
 		}
+
+		return out;
 	}
 
 	int GetWidth() { return _width; }
@@ -194,10 +206,10 @@ public:
 
 	std::vector<vector<Cell<T> *>> _map;
 	bool debug;
+	CellFactory<T> *_factory;
 
 private:
 	int _width, _height;
-	CellFactory<T> *_factory;
 };
 
 #pragma region helper_functions
@@ -205,29 +217,32 @@ private:
 // may remove these from the class and have these by themselves if useful enough
 
 template <typename T>
-void Grid<T>::CreatePassage(Region<T> *A, Region<T> *B, Cell<T> *tA, Cell<T> *tB, T fill)
+vector<Cell<T> *> Grid<T>::GetPassageCells(Cell<T> *tA, Cell<T> *tB)
 {
-	CreatePassage(A, B, tA->pos, tB->pos, fill);
+	return GetPassageCells(tA->pos, tB->pos);
 }
 
 template <typename T>
-void Grid<T>::CreatePassage(Region<T> *A, Region<T> *B, vec2 tA, vec2 tB, T fill)
+vector<Cell<T> *> Grid<T>::GetPassageCells(vec2 tA, vec2 tB)
 {
-	// cout<<"Creating Passage"<<std::endl;
-	Region<T>::ConnectRegions(A, B);
-
 	vector<vec2> line = GetLine(tA, tB);
+
+	vector<Cell<T> *> out;
 
 	for (int i = 0; i < line.size(); i++)
 	{
 		//===================================== TO DO
 		// editing a bit..
-		DrawCircle(line[i], 1, fill);
+		// DrawCircle(line[i], 1, fill);
+
+		out.push_back(GetCell(line[i]));
 	}
+
+	return out;
 }
 
 template <typename T>
-void Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill)
+vector<Cell<T> *> Grid<T>::GetRegionConnection(Region<T> *A, Region<T> *B, bool angular, T fill)
 {
 	int lowestD = (int)(pow((A->border[0]->pos.x - B->border[0]->pos.x), 2) +
 						(pow((A->border[0]->pos.y - B->border[0]->pos.y), 2)));
@@ -255,34 +270,32 @@ void Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill)
 		}
 	}
 
-	//==================================================== TO DO
+	vector<Cell<T> *> regionTiles;
+
+	// TODO: regionTiles shouldn't be empty but sometimes it is, look into this
 	// create an angular, maybe even jagged connection
 	if (angular)
 	{
-		// CreatePassage(A, B, bestCellA, bestCellB);
+		// GetPassageCells(A, B, bestCellA, bestCellB);
 		vec2 corner = {bestCellB.x, bestCellA.y};
-		vector<vec2> line1 = GetLine(bestCellA, corner);
-		vector<vec2> line2 = GetLine(corner, bestCellB);
+		vector<Cell<T> *> line1 = GetPassageCells(bestCellA, corner);
+		vector<Cell<T> *> line2 = GetPassageCells(corner, bestCellB);
 
-		for (int i = 0; i < line1.size(); i++)
-		{
-			//===================================== TO DO
-			DrawCircle(line1[i], 1, fill);
-		}
+		auto it = line2.begin();
 
-		for (int i = 0; i < line2.size(); i++)
-		{
-			//===================================== TO DO
-			DrawCircle(line2[i], 1, fill);
-		}
-
-		Region<T>::ConnectRegions(A, B);
+		regionTiles.reserve(line1.size() + line2.size()); // preallocate memory
+		regionTiles.insert(regionTiles.end(), line1.begin(), line1.end());
+		// corner will be duplicated so remove it
+		regionTiles.insert(regionTiles.end(), line2.begin()++, line2.end());
 	}
 	// otherwise, follow gradient
 	else
 	{
-		CreatePassage(A, B, bestCellA, bestCellB, fill);
+		vector<Cell<T> *> regionTiles = GetPassageCells(bestCellA, bestCellB);
+		// return GetPassageCells(A, B, bestCellA, bestCellB, fill);
 	}
+
+	return regionTiles;
 }
 
 #pragma endregion helper_functions
@@ -290,7 +303,7 @@ void Grid<T>::ConnectRegions(Region<T> *A, Region<T> *B, bool angular, T fill)
 #pragma region GRID_METHODS
 //========================GRID METHODS================================
 template <typename T>
-bool Grid<T>::InMapRange(int x, int y)
+bool Grid<T>::InMapRange(int x, int y) const
 {
 	return x >= 0 && x < _width && y >= 0 && y < _height;
 }
@@ -316,7 +329,14 @@ template <typename T>
 Grid<T>::~Grid()
 {
 	// calling vector clear calls the destructor for each element but not delete
-	// TODO: clear up memory
+	for (auto &row : _map)
+	{
+		for (Cell<T> *cell : row)
+		{
+			if (cell)
+				delete cell;
+		}
+	}
 }
 
 template <typename T>
@@ -352,7 +372,7 @@ void Grid<T>::Clear()
 // Cells is an "empty" spot (assuming the Cell in question isn't)
 // empty itself
 template <typename T>
-bool Grid<T>::IsOutlineCell(int x, int y, Cell<T> *reference)
+bool Grid<T>::IsOutlineCell(int x, int y, T reference)
 {
 	if (!InMapRange(x, y))
 		return false;
@@ -369,18 +389,12 @@ bool Grid<T>::IsOutlineCell(int x, int y, Cell<T> *reference)
 			if (!InMapRange(i, j))
 				continue;
 
-			if (_map[i][j] == reference)
+			if (_map[i][j]->data == reference)
 				return true;
 		}
 	}
 	return false;
 }
-
-// template <typename T, size_t N>
-
-// template <typename T, size_t N>
-
-// template <typename T, size_t N>
 
 // floodfill to get all Cells in the region
 template <typename T>
@@ -403,19 +417,8 @@ vector<vec2> Grid<T>::GetRegionCells(int sx, int sy, bool (*compare)(const T A, 
 		cout << "Compare function null" << std::endl;
 	}
 
-	// check if Cell was looked at yet
-	// need to initialize each value, however, look at alternatives
-	vector<vector<int>> flags;
-	for (int i = 0; i < _width; i++)
-	{
-		vector<int> tmp;
-
-		for (int j = 0; j < _height; j++)
-		{
-			tmp.push_back(0);
-		}
-		flags.push_back(tmp);
-	}
+	// flags to determine which Cells have already been visited
+	vector<vector<int>> flags(_width, vector<int>(_height, 0));
 
 	T CellType = _map[sx][sy]->data;
 
@@ -435,11 +438,12 @@ vector<vec2> Grid<T>::GetRegionCells(int sx, int sy, bool (*compare)(const T A, 
 		{
 			for (int y = t.y - 1; y <= t.y + 1; y++)
 			{
-				if (InMapRange(x, y) && (y == t.y || x == t.x) && flags[x][y] == 0)
+				// TODO: re-add diagonal filter?
+				if (InMapRange(x, y) && flags[x][y] == 0)
 				{
 					if (compare)
 					{
-						if (compare(CellType, _map[x][y]->data))
+						if (compare(_map[x][y]->data, CellType))
 						{
 							flags[x][y] = 1;
 							q.push(vec2{x, y});
@@ -447,7 +451,7 @@ vector<vec2> Grid<T>::GetRegionCells(int sx, int sy, bool (*compare)(const T A, 
 					}
 					else
 					{
-						if (default_compare(CellType, _map[x][y]->data))
+						if (default_compare(_map[x][y]->data, CellType))
 						{
 							flags[x][y] = 1;
 							q.push(vec2{x, y});
@@ -461,14 +465,16 @@ vector<vec2> Grid<T>::GetRegionCells(int sx, int sy, bool (*compare)(const T A, 
 	return Cells;
 }
 
+// TODO: there's a minor issue with this: we should pass an array of
+// mapcells in case the region is made up of more than 1s and 0s
 template <typename T>
-vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const T MapCell, const T CellType))
+vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const T MapCell, const T Compare))
 {
 	vector<vector<vec2>> regions;
 
-	auto default_compare = [](const T A, T B) -> bool
+	auto default_compare = [](const T MapCell, const T Compare) -> bool
 	{
-		if (A == B)
+		if (MapCell == Compare)
 			return true;
 		else
 			return false;
@@ -480,17 +486,7 @@ vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const
 	}
 
 	// flags to determine which Cells have already been visited
-	vector<vector<int>> flags;
-	for (int i = 0; i < _width; i++)
-	{
-		vector<int> tmp;
-
-		for (int j = 0; j < _height; j++)
-		{
-			tmp.push_back(0);
-		}
-		flags.push_back(tmp);
-	}
+	vector<vector<int>> flags(_width, vector<int>(_height, 0));
 
 	// iterate over every Cell, could optimize this fairly easily
 	// by removing locations from the set as we touch them
@@ -498,12 +494,23 @@ vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const
 	{
 		for (int y = 0; y < _height; y++)
 		{
-			if (compare && compare(_map[x][y]->data, CellType))
+			if (compare && compare(_map[x][y]->data, CellType) && flags[x][y] == 0)
 			{
-				if (flags[x][y] == 0)
+				vector<vec2> newRegion = GetRegionCells(x, y, default_compare);
+				regions.push_back(newRegion);
+
+				for (int i = 0; i < newRegion.size(); i++)
+				{
+					vec2 t = newRegion[i];
+					flags[t.x][t.y] = 1;
+				}
+			}
+			else
+			{
+				if (default_compare(_map[x][y]->data, CellType) && flags[x][y] == 0)
 				{
 					// cout<<"getting region..."<<std::endl;
-					vector<vec2> newRegion = GetRegionCells(x, y, compare);
+					vector<vec2> newRegion = GetRegionCells(x, y, default_compare);
 					// cout<<"got region"<<std::endl;
 					regions.push_back(newRegion);
 
@@ -511,25 +518,6 @@ vector<vector<vec2>> Grid<T>::GetRegions(const T CellType, bool (*compare)(const
 					{
 						vec2 t = newRegion[i];
 						flags[t.x][t.y] = 1;
-					}
-				}
-			}
-			else
-			{
-				if (default_compare(_map[x][y]->data, CellType))
-				{
-					if (flags[x][y] == 0)
-					{
-						// cout<<"getting region..."<<std::endl;
-						vector<vec2> newRegion = GetRegionCells(x, y, compare);
-						// cout<<"got region"<<std::endl;
-						regions.push_back(newRegion);
-
-						for (int i = 0; i < newRegion.size(); i++)
-						{
-							vec2 t = newRegion[i];
-							flags[t.x][t.y] = 1;
-						}
 					}
 				}
 			}
@@ -633,46 +621,11 @@ void Grid<T>::LoadFloor()
 	LoadFloor(s);
 }
 
+// TODO: rewrite this
 // how floors are loaded and serialized will depend on the project tbh
 template <typename T>
 void Grid<T>::LoadFloor(string path)
 {
-	/*std::ifstream file;
-	file.open(path.c_str());
-
-	string line;
-	char l[100000];
-
-	if(!file.is_open())
-		return;
-
-	_map.clear();
-
-	while(getline (file, line))
-	{
-		strcpy(l,line.c_str());
-		vector<int> col;
-
-		for(int y = 0 ; y < strlen(l) ; y++)
-		{
-			col.push_back((l[y] - '0'));
-		}
-
-		//for now only read 0, 1
-		_map.push_back(col);
-	}
-
-	_width = _map.size();
-
-	if(_width > 0)
-		_height = _map[0].size();
-	else
-		_height = 0;
-
-	file.close();
-
-	cout<<"Finished reading"<<std::endl;
-	*/
 }
 
 template <typename T>
@@ -685,26 +638,11 @@ void Grid<T>::SaveFloor()
 	SaveFloor(s);
 }
 
+// TODO: rewrite this
 // how floors are loaded and serialized will depend on the project tbh
 template <typename T>
 void Grid<T>::SaveFloor(string path)
 {
-	/*std::ofstream file;
-	file.open(path.c_str());
-
-	if(!file.is_open())
-		return;
-
-	for(int i = 0; i < _width ; i++)
-	{
-		for(int j = 0; j < _height ; j++)
-		{
-			file << _map[i][j];
-		}
-		file << '\n';
-	}
-	file.close();
-	*/
 }
 
 template <typename T>

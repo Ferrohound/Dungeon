@@ -3,61 +3,48 @@
 #pragma region ms_methods
 //========================MAP SYSTEM METHODS================================
 
+Floor<int> *MapSystem::Generate(int width, int height, int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect)
+{
+	Floor<int> *out = new Floor<int>(width, height, f);
+
+	Generate(out, fillPercentage, useRandomSeed, seed, smoothing, connect);
+
+	return out;
+}
+
 // create a floor with the given dimensions and fillPercentage
 // randomly generate a room given a fillPercentage, a seed and how much smoothing to use
-Grid<int>* MapSystem::Generate(int width, int height, int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect)
+void MapSystem::Generate(Floor<int> *floor, int fillPercentage, bool useRandomSeed, int seed, int smoothing, bool connect)
 {
 	cout << "Generating" << std::endl;
 
-	// TODO: clear up memory
-
-	NumTileFactory f = NumTileFactory(0);
-	_grid = new Grid<int>(width, height, &f);
-
-	// grid->Clear();
-
-	// iterate over the _rooms & spaces, freeing up their memory
-	for (int i = 0; i < _rooms.size(); i++)
-	{
-		delete _rooms[i];
-	}
-	for (int i = 0; i < _spaces.size(); i++)
-	{
-		delete _spaces[i];
-	}
-
-	_rooms.clear();
-	_spaces.clear();
-
-	/*for(int i = 0; i < grid->GetWidth(); i++)
-	{
-		vector<int>tmp(grid->GetHeight());
-		grid->_map.push_back(tmp);
-	}*/
+	floor->Reset();
 
 	if (!perlin)
 	{
 		// cout<<"Random Fill"<<std::endl;
-		RandomFillMap(_grid, useRandomSeed, seed, fillPercentage, debug);
+		RandomFillMap(floor->grid, useRandomSeed, seed, fillPercentage, debug);
 		// cout<<*grid;
 	}
 	else
 	{
-		PerlinFillMap(_grid, seed);
+		PerlinFillMap(floor->grid, seed);
 	}
+
+	// cout << *floor;
 
 	for (int i = 0; i < smoothing; i++)
 	{
-		SmoothMap(_grid);
+		SmoothMap(floor->grid);
 	}
 
-	// cout<<*grid;
+	cout << "Smoothing" << std::endl;
 
-	ProcessMap(_grid, connect);
+	// cout << *floor;
+
+	ProcessMap(*floor, connect);
 
 	cout << "Done Generating" << std::endl;
-
-	return _grid->Clone();
 }
 
 // cellular automita; change tile value based on what surrounds it
@@ -72,34 +59,33 @@ void MapSystem::SmoothMap(Grid<int> *grid)
 
 			if (neighbors > 4)
 			{
-				grid->_map[x][y] = &_tiles[1];
+				grid->_map[x][y]->data = _tiles[1].data;
 			}
 
 			else if (neighbors < 4)
 			{
-				grid->_map[x][y] = &_tiles[0];
+				grid->_map[x][y]->data = _tiles[0].data;
 			}
 		}
 	}
-	// cout<<"done smoothing"<<std::endl;
 }
 
 // clean up, remove wall regions and room regions that are too small
-void MapSystem::ProcessMap(Grid<int> *grid, bool connect)
+void MapSystem::ProcessMap(Floor<int> &floor, bool connect)
 {
 	cout << "Processing" << std::endl;
 
 	// lambda to group all tiles with > 0 as a wall
 	//  bool (*general_wall)(const Cell<int>* A, const Cell<int>* B) = NULL;
 
-	auto general_wall = [](const int MapCell, const int CellType) -> bool
+	auto general_wall = [](const int MapCell, const int Compare) -> bool
 	{
-		return MapCell > CellType ? true : false;
+		return MapCell > Compare;
 	};
 
 	cout << "Getting regions." << std::endl;
 
-	vector<vector<vec2>> wallRegions = grid->GetRegions(_tiles->data, general_wall);
+	vector<vector<vec2>> wallRegions = floor.grid->GetRegions(_tiles[0].data, general_wall);
 	// vector<Region*> remainingSpaces;
 
 	cout << "Regions attained." << std::endl;
@@ -114,10 +100,9 @@ void MapSystem::ProcessMap(Grid<int> *grid, bool connect)
 			for (int j = 0; j < wallRegions[i].size(); j++)
 			{
 				vec2 t = wallRegions[i][j];
-				// remember that 1 is space in this for some insane reason
-				if (grid->InMapRange(t.x, t.y))
+				if (floor.grid->InMapRange(t.x, t.y))
 				{
-					grid->_map[t.x][t.y] = &_tiles[1];
+					floor.grid->_map[t.x][t.y]->data = _tiles[0].data;
 				}
 			}
 		}
@@ -129,10 +114,10 @@ void MapSystem::ProcessMap(Grid<int> *grid, bool connect)
 	}
 	cout << "Removed Walls" << std::endl;
 
-	cout << *grid;
+	// cout << floor;
 
 	vector<vector<vec2>> roomRegions =
-		grid->GetRegions(_tiles[1].data, general_wall);
+		floor.grid->GetRegions(_tiles[1].data, general_wall);
 
 	// if (debug)
 	cout << "Initial number of rooms: " << roomRegions.size() << std::endl;
@@ -148,21 +133,23 @@ void MapSystem::ProcessMap(Grid<int> *grid, bool connect)
 			for (int j = 0; j < roomRegions[i].size(); j++)
 			{
 				vec2 t = roomRegions[i][j];
-				grid->_map[t.x][t.y]->data = _tiles[1].data;
+				floor.grid->_map[t.x][t.y]->data = _tiles[0].data;
 			}
 		}
 		// otherwise create a region with those tiles
 		else
 		{
 			int fillValues[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-			remainingRooms.push_back(new Region<int>(grid->GetCells(roomRegions[i]), grid->GetRegionOutline(roomRegions[i], fillValues)));
-			_rooms.push_back(remainingRooms[id]);
+			remainingRooms.push_back(new Region<int>(floor.grid->GetCells(roomRegions[i]), floor.grid->GetRegionOutline(roomRegions[i], fillValues)));
+			floor.regions.push_back(remainingRooms[id]);
 			id++;
 		}
 	}
 
 	// if (debug)
 	cout << "Removed " << roomRegions.size() - remainingRooms.size() << " rooms." << std::endl;
+
+	// cout << floor;
 
 	// error check this to make sure the room's aren't all eliminated
 	// remainingRooms.Sort();
@@ -171,19 +158,19 @@ void MapSystem::ProcessMap(Grid<int> *grid, bool connect)
 	if (remainingRooms.size() > 0)
 	{
 		// TODO: room accessibility stuff
-		_mainRegion = remainingRooms[0];
-		_regionAccesibility[remainingRooms[0]] = true;
+		floor.SetMainRegion(remainingRooms[0]);
+		floor.regionAccesibility[remainingRooms[0]] = true;
 		// if (debug)
 		cout << "Biggest of the remaining rooms=> " << remainingRooms[0]->size << std::endl;
 	}
 
 	if (connect)
-		ConnectClosestRooms(grid, remainingRooms);
+		ConnectClosestRooms(floor, remainingRooms);
 
 	cout << "Done Processing" << std::endl;
 }
 
-void MapSystem::ConnectClosestRooms(Grid<int> *grid, vector<Region<int> *> rooms, bool forceAccessibility)
+void MapSystem::ConnectClosestRooms(Floor<int> &floor, vector<Region<int> *> rooms, bool forceAccessibility)
 {
 
 	// cout<<"Connecting rooms.."<<std::endl;
@@ -196,7 +183,7 @@ void MapSystem::ConnectClosestRooms(Grid<int> *grid, vector<Region<int> *> rooms
 		for (int i = 0; i < rooms.size(); i++)
 		{
 			Region<int> *R = rooms[i];
-			if (_regionAccesibility[R])
+			if (floor.regionAccesibility[R])
 			{
 				roomListB.push_back(R);
 			}
@@ -275,24 +262,26 @@ void MapSystem::ConnectClosestRooms(Grid<int> *grid, vector<Region<int> *> rooms
 		// if a connection is found and we're not forcing accessibility, connect them
 		// and go onto the next room
 		if (connectionFound && !forceAccessibility)
-			grid->CreatePassage(bestRoomA, bestRoomB, grid->GetCell(bestTileA.x, bestTileA.y), grid->GetCell(bestTileB.x, bestTileB.y), _tiles[2].data);
+			floor.ConnectRegions(bestRoomA, bestRoomB, bestTileA, bestTileB, _tiles[2].data);
+		// grid->CreatePassage(bestRoomA, bestRoomB, grid->GetCell(bestTileA.x, bestTileA.y), grid->GetCell(bestTileB.x, bestTileB.y), _tiles[2].data);
 	}
 
 	if (connectionFound && forceAccessibility)
 	{
-		grid->CreatePassage(bestRoomA, bestRoomB, grid->GetCell(bestTileA.x, bestTileA.y), grid->GetCell(bestTileB.x, bestTileB.y), _tiles[2].data);
-		ConnectClosestRooms(grid, rooms, true);
+		floor.ConnectRegions(bestRoomA, bestRoomB, bestTileA, bestTileB, _tiles[2].data);
+		// grid->CreatePassage(bestRoomA, bestRoomB, grid->GetCell(bestTileA.x, bestTileA.y), grid->GetCell(bestTileB.x, bestTileB.y), _tiles[2].data);
+		ConnectClosestRooms(floor, rooms, true);
 	}
 
 	if (!forceAccessibility)
 	{
-		ConnectClosestRooms(grid, rooms, true);
+		ConnectClosestRooms(floor, rooms, true);
 	}
 
 	// cout<<"Done Connecting Rooms"<<std::endl;
 }
 
-void MapSystem::ProcessRooms(Grid<int> *grid, int max, int min, int smoothing)
+void MapSystem::ProcessRooms(Floor<int> &floor, int max, int min, int smoothing)
 {
 
 	int seed = time(NULL);
@@ -300,21 +289,21 @@ void MapSystem::ProcessRooms(Grid<int> *grid, int max, int min, int smoothing)
 
 	for (int i = -1; i < smoothing; i++)
 	{
-		for (int j = 0; j < _rooms.size(); j++)
+		for (int j = 0; j < floor.regions.size(); j++)
 		{
 			if (i == -1)
 			{
 				// iterate over every tile in the room and set its value to a random number
 				// between the given range
-				for (int k = 0; k < _rooms[j]->cells.size(); k++)
+				for (int k = 0; k < floor.regions[j]->cells.size(); k++)
 				{
-					grid->_map[_rooms[j]->cells[k]->pos.x][_rooms[j]->cells[k]->pos.y] =
+					floor.grid->_map[floor.regions[j]->cells[k]->pos.x][floor.regions[j]->cells[k]->pos.y] =
 						&_tiles[(rand() % (max - min) + min)];
 				}
 			}
 			else
 			{
-				SmoothRoom(grid, _rooms[j], 1);
+				SmoothRoom(floor.grid, floor.regions[j], 1);
 			}
 		}
 	}

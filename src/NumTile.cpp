@@ -45,8 +45,8 @@ int GetSurroundingWallCount(Grid<int> *grid, int sx, int sy)
 				wallCount++;
 			else
 			{
-				Cell<int> *t = grid->_map[x][y];
-				if (t->data != 0)
+				Cell<int> *t = grid->GetCell(x, y);
+				if (t == NULL || t->data != 0)
 				{
 					wallCount++;
 				}
@@ -107,7 +107,7 @@ void PerlinFillMap(Grid<int> *grid, int seed)
 		int x = i / grid->GetWidth();
 		int y = i % grid->GetWidth();
 
-		grid->_map[x][y] = &numtiles[(int)pMap[i]];
+		grid->_map[x][y]->data = numtiles[(int)pMap[i]].data;
 	}
 
 	// grid->ImportFloor(pMap, grid->GetWidth(), grid->GetHeight());
@@ -116,6 +116,7 @@ void PerlinFillMap(Grid<int> *grid, int seed)
 	delete pMap;
 }
 
+// TODO: 0s and 1s flip
 // randomly fill a map given a fillPercentage
 void RandomFillMap(Grid<int> *grid, bool useRandomSeed, int seed, int fillPercentage, bool debug)
 {
@@ -135,7 +136,7 @@ void RandomFillMap(Grid<int> *grid, bool useRandomSeed, int seed, int fillPercen
 		for (int y = 0; y < grid->GetHeight(); y++)
 		{
 			if (x == 0 || x == grid->GetWidth() - 1 || y == 0 || y == grid->GetHeight() - 1)
-				grid->_map[x][y]->data = numtiles[1].data;
+				grid->_map[x][y]->data = numtiles[0].data;
 			else
 				grid->_map[x][y]->data =
 					(rand() % 101 < fillPercentage) ? numtiles[1].data : numtiles[0].data;
